@@ -4,5 +4,5 @@ public class QueuePosition{
     private Long id;
     private Token token;
     private Integer position;
-    private LocalDateTime 
+    private LocalDateTime updatedAt;
 }
