@@ -5,4 +5,8 @@ public class TokenLog{
     private Token token;
     private String logMessage;
     private LocalDateTime loggedAt;
+    
+    public void onCreate(){
+        loggedAt = LocalDateTime.now();
+    }
 }
