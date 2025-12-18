@@ -1,13 +1,9 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
-@Getter
-@Setter
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
 public class User {
 
     @Id
@@ -15,11 +11,18 @@ public class User {
     private Long id;
 
     private String name;
-
-    @Column(unique = true)
     private String email;
-
     private String password;
+    private String role; // ADMIN / STAFF
 
-    private String role;
+    public User() {}
+
+    public User(String name, String email, String password, String role) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
+
+    // getters & setters
 }
