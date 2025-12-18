@@ -60,9 +60,12 @@ public class TokenServiceImpl implements TokenService {
         qp.setUpdatedAt(LocalDateTime.now());
         queueRepository.save(qp);
 
-        tokenLogRepository.save(
-                new TokenLog(null, token, "Token issued", LocalDateTime.now())
-        );
+        // ✅ FIX 1 – TokenLog (NO constructor usage)
+        TokenLog issueLog = new TokenLog();
+        issueLog.setToken(token);
+        issueLog.setLogMessage("Token issued");
+        issueLog.setLoggedAt(LocalDateTime.now());
+        tokenLogRepository.save(issueLog);
 
         return token;
     }
@@ -87,11 +90,12 @@ public class TokenServiceImpl implements TokenService {
         token.setStatus(status);
         token = tokenRepository.save(token);
 
-        tokenLogRepository.save(
-                new TokenLog(null, token,
-                        "Status changed to " + status,
-                        LocalDateTime.now())
-        );
+        // ✅ FIX 2 – TokenLog (NO constructor usage)
+        TokenLog statusLog = new TokenLog();
+        statusLog.setToken(token);
+        statusLog.setLogMessage("Status changed to " + status);
+        statusLog.setLoggedAt(LocalDateTime.now());
+        tokenLogRepository.save(statusLog);
 
         return token;
     }
