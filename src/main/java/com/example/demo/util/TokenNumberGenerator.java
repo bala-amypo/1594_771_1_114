@@ -2,9 +2,9 @@ package com.example.demo.util;
 
 import java.util.UUID;
 
-public final class TokenGenerator {
+public final class TokenNumberGenerator {
 
-    private TokenGenerator() {
+    private TokenNumberGenerator() {
     }
 
     public static String generate() {
