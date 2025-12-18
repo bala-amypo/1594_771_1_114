@@ -1,6 +1,5 @@
 package com.example.demo.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,10 +16,8 @@ public class QueuePosition {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "token_id")
     private Token token;
 
     private Integer position;
-
     private LocalDateTime updatedAt;
 }
