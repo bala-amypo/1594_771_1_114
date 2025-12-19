@@ -1,10 +1,27 @@
-@Override
-public ServiceCounter addCounter(ServiceCounter counter) {
+package com.example.demo.service.impl;
 
-    if (counter == null) {
-        counter = new ServiceCounter();
+import com.example.demo.entity.ServiceCounter;
+import com.example.demo.repository.ServiceCounterRepository;
+import com.example.demo.service.ServiceCounterService;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ServiceCounterServiceImpl implements ServiceCounterService {
+
+    private final ServiceCounterRepository repository;
+
+    public ServiceCounterServiceImpl(ServiceCounterRepository repository) {
+        this.repository = repository;
     }
 
-    ServiceCounter saved = serviceCounterRepository.save(counter);
-    return saved;
+    @Override
+    public ServiceCounter addCounter(ServiceCounter counter) {
+
+        if (counter == null) {
+            counter = new ServiceCounter();
+        }
+
+        ServiceCounter saved = repository.save(counter);
+        return saved;
+    }
 }

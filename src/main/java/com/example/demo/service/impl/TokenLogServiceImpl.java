@@ -1,47 +1,33 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.Token;
 import com.example.demo.entity.TokenLog;
-import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.TokenLogRepository;
-import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.TokenLogService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class TokenLogServiceImpl implements TokenLogService {
 
-    private final TokenLogRepository logRepository;
-    private final TokenRepository tokenRepository;
+    private final TokenLogRepository repository;
 
-    public TokenLogServiceImpl(
-            TokenLogRepository logRepository,
-            TokenRepository tokenRepository
-    ) {
-        this.logRepository = logRepository;
-        this.tokenRepository = tokenRepository;
+    public TokenLogServiceImpl(TokenLogRepository repository) {
+        this.repository = repository;
     }
 
     @Override
-    public TokenLog addLog(Long tokenId, String message) {
+    public TokenLog addLog(TokenLog log) {
 
-        Token token = tokenRepository.findById(tokenId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Token not found"));
+        if (log == null) {
+            log = new TokenLog();
+        }
 
-        TokenLog log = new TokenLog();
-        log.setToken(token);
-        log.setLogMessage(message);
-        log.setLoggedAt(LocalDateTime.now());
+        if (log.getCreatedAt() == null) {
+            log.setCreatedAt(LocalDateTime.now());
+        }
 
-        return logRepository.save(log);
-    }
-
-    @Override
-    public List<TokenLog> getLogs(Long tokenId) {
-        return logRepository.findByToken_IdOrderByLoggedAtAsc(tokenId);
+        TokenLog saved = repository.save(log);
+        return saved;
     }
 }
