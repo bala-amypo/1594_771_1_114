@@ -1,77 +1,26 @@
-package com.example.demo.service.impl;
+@Override
+public Token updateStatus(Long tokenId, String status) {
 
-import com.example.demo.entity.*;
-import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.repository.*;
-import com.example.demo.service.TokenService;
-import org.springframework.stereotype.Service;
+    Token token = tokenRepository.findById(tokenId)
+            .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+    String oldStatus = token.getStatus();
 
-@Service
-public class TokenServiceImpl implements TokenService {
-
-    private final TokenRepository tokenRepository;
-    private final ServiceCounterRepository counterRepository;
-    private final TokenLogRepository logRepository;
-    private final QueuePositionRepository queueRepository;
-
-    public TokenServiceImpl(TokenRepository tokenRepository,
-                            ServiceCounterRepository counterRepository,
-                            TokenLogRepository logRepository,
-                            QueuePositionRepository queueRepository) {
-        this.tokenRepository = tokenRepository;
-        this.counterRepository = counterRepository;
-        this.logRepository = logRepository;
-        this.queueRepository = queueRepository;
+    // ❌ Invalid transitions
+    if (oldStatus.equals("WAITING") && status.equals("COMPLETED")) {
+        throw new IllegalStateException("Invalid status");
     }
 
-    @Override
-    public Token issueToken(Long counterId) {
-
-        ServiceCounter counter = counterRepository.findById(counterId)
-                .orElseThrow(() -> new ResourceNotFoundException("Counter not found"));
-
-        Token token = new Token();
-        token.setServiceCounter(counter);
-        token.setTokenNumber(UUID.randomUUID().toString());
-        token.setStatus("WAITING");
-        token.setIssuedAt(LocalDateTime.now());
-
-        // 👇 STEP 4 IMPORTANT LINE
-        Token savedToken = tokenRepository.save(token);
-
-        QueuePosition qp = new QueuePosition();
-        qp.setToken(savedToken);
-        qp.setPosition(1);
-        queueRepository.save(qp);
-
-        TokenLog log = new TokenLog();
-        log.setToken(savedToken);
-        log.setLogMessage("Token issued");
-        logRepository.save(log);
-
-        return savedToken;
+    if (oldStatus.equals("SERVING") && status.equals("WAITING")) {
+        throw new IllegalStateException("Invalid status");
     }
 
-    @Override
-    public Token updateStatus(Long tokenId, String status) {
+    token.setStatus(status);
 
-        Token token = tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
-
-        token.setStatus(status);
-
-        // 👇 STEP 4 IMPORTANT LINE
-        Token updatedToken = tokenRepository.save(token);
-
-        return updatedToken;
+    if (status.equals("COMPLETED")) {
+        token.setCompletedAt(LocalDateTime.now());
     }
 
-    @Override
-    public Token getToken(Long tokenId) {
-        return tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
-    }
+    Token updated = tokenRepository.save(token);
+    return updated;
 }
