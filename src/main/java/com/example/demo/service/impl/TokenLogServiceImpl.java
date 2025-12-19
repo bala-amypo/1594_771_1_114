@@ -1,10 +1,7 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.Token;
 import com.example.demo.entity.TokenLog;
-import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.TokenLogRepository;
-import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.TokenLogService;
 import org.springframework.stereotype.Service;
 
@@ -15,23 +12,16 @@ import java.util.List;
 public class TokenLogServiceImpl implements TokenLogService {
 
     private final TokenLogRepository tokenLogRepository;
-    private final TokenRepository tokenRepository;
 
-    public TokenLogServiceImpl(TokenLogRepository tokenLogRepository,
-                               TokenRepository tokenRepository) {
+    public TokenLogServiceImpl(TokenLogRepository tokenLogRepository) {
         this.tokenLogRepository = tokenLogRepository;
-        this.tokenRepository = tokenRepository;
     }
 
     @Override
-    public TokenLog addLog(Long tokenId, String status) {
-
-        Token token = tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
+    public TokenLog logStatus(Long tokenId, String status) {
 
         TokenLog log = new TokenLog();
-        log.setToken(token);
-        log.setStatus(status);                 // ✅ status parameter
+        log.setStatus(status);              // ✅ IMPORTANT
         log.setLoggedAt(LocalDateTime.now());
 
         return tokenLogRepository.save(log);
@@ -39,7 +29,6 @@ public class TokenLogServiceImpl implements TokenLogService {
 
     @Override
     public List<TokenLog> getLogs(Long tokenId) {
-        return tokenLogRepository
-                .findByToken_IdOrderByLoggedAtAsc(tokenId); // ✅ correct repo method
+        return tokenLogRepository.findByTokenIdOrderByLoggedAtAsc(tokenId);
     }
 }
