@@ -71,7 +71,7 @@
     <artifactId>mysql-connector-j</artifactId>
     <version>9.5.0</version>
 </dependency>
-// chatgpt
+
 <dependency>
     <groupId>io.jsonwebtoken</groupId>
     <artifactId>jjwt</artifactId>
