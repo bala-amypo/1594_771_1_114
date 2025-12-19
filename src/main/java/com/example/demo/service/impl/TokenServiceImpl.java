@@ -29,44 +29,49 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public Token issueToken(Long counterId) {
-        ServiceCounter counter = counterRepository.findById(counterId)
-                .orElseThrow(() -> new ResourceNotFoundException("not found"));
 
-        if (!counter.getIsActive()) {
-            throw new IllegalArgumentException("not active");
-        }
+        ServiceCounter counter = counterRepository.findById(counterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Counter not found"));
 
         Token token = new Token();
-        token.setTokenNumber(UUID.randomUUID().toString());
         token.setServiceCounter(counter);
+        token.setTokenNumber(UUID.randomUUID().toString());
         token.setStatus("WAITING");
         token.setIssuedAt(LocalDateTime.now());
 
-        Token saved = tokenRepository.save(token);
+        // 👇 STEP 4 IMPORTANT LINE
+        Token savedToken = tokenRepository.save(token);
 
-        queueRepository.save(new QueuePosition(saved, 1, LocalDateTime.now()));
-        logRepository.save(new TokenLog(saved, "Token issued", null));
+        QueuePosition qp = new QueuePosition();
+        qp.setToken(savedToken);
+        qp.setPosition(1);
+        queueRepository.save(qp);
 
-        return saved;
+        TokenLog log = new TokenLog();
+        log.setToken(savedToken);
+        log.setLogMessage("Token issued");
+        logRepository.save(log);
+
+        return savedToken;
     }
 
     @Override
     public Token updateStatus(Long tokenId, String status) {
+
         Token token = tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new ResourceNotFoundException("not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
         token.setStatus(status);
-        if ("COMPLETED".equals(status)) {
-            token.setCompletedAt(LocalDateTime.now());
-        }
 
-        logRepository.save(new TokenLog(token, "Status updated", null));
-        return tokenRepository.save(token);
+        // 👇 STEP 4 IMPORTANT LINE
+        Token updatedToken = tokenRepository.save(token);
+
+        return updatedToken;
     }
 
     @Override
     public Token getToken(Long tokenId) {
         return tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new ResourceNotFoundException("not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
     }
 }
