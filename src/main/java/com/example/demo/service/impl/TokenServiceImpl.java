@@ -1,33 +1,36 @@
-package com.example.demo.service;
+package com.example.demo.service.impl;
 
 import com.example.demo.entity.*;
-import com.example.demo.repository.*;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.repository.*;
+import com.example.demo.service.TokenService;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
 public class TokenServiceImpl implements TokenService {
 
-    private final TokenRepository tokenRepo;
-    private final ServiceCounterRepository counterRepo;
-    private final TokenLogRepository logRepo;
-    private final QueuePositionRepository queueRepo;
+    private final TokenRepository tokenRepository;
+    private final ServiceCounterRepository counterRepository;
+    private final TokenLogRepository logRepository;
+    private final QueuePositionRepository queueRepository;
 
-    public TokenServiceImpl(TokenRepository tokenRepo,
-                            ServiceCounterRepository counterRepo,
-                            TokenLogRepository logRepo,
-                            QueuePositionRepository queueRepo) {
-        this.tokenRepo = tokenRepo;
-        this.counterRepo = counterRepo;
-        this.logRepo = logRepo;
-        this.queueRepo = queueRepo;
+    public TokenServiceImpl(TokenRepository tokenRepository,
+                            ServiceCounterRepository counterRepository,
+                            TokenLogRepository logRepository,
+                            QueuePositionRepository queueRepository) {
+        this.tokenRepository = tokenRepository;
+        this.counterRepository = counterRepository;
+        this.logRepository = logRepository;
+        this.queueRepository = queueRepository;
     }
 
+    @Override
     public Token issueToken(Long counterId) {
-        ServiceCounter counter = counterRepo.findById(counterId)
-                .orElseThrow(() -> new ResourceNotFoundException("Counter not found"));
+        ServiceCounter counter = counterRepository.findById(counterId)
+                .orElseThrow(() -> new ResourceNotFoundException("not found"));
 
         if (!counter.getIsActive()) {
             throw new IllegalArgumentException("not active");
@@ -39,33 +42,31 @@ public class TokenServiceImpl implements TokenService {
         token.setStatus("WAITING");
         token.setIssuedAt(LocalDateTime.now());
 
-        Token saved = tokenRepo.save(token);
+        Token saved = tokenRepository.save(token);
 
-        queueRepo.save(new QueuePosition(saved, 1, LocalDateTime.now()));
-        logRepo.save(new TokenLog(saved, "Token issued", null));
+        queueRepository.save(new QueuePosition(saved, 1, LocalDateTime.now()));
+        logRepository.save(new TokenLog(saved, "Token issued", null));
 
         return saved;
     }
 
+    @Override
     public Token updateStatus(Long tokenId, String status) {
-        Token token = getToken(tokenId);
-
-        if (!token.getStatus().equals("WAITING") && status.equals("SERVING") == false &&
-            !token.getStatus().equals("SERVING") && status.equals("COMPLETED") == false) {
-            throw new IllegalArgumentException("Invalid status");
-        }
+        Token token = tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new ResourceNotFoundException("not found"));
 
         token.setStatus(status);
-        if (status.equals("COMPLETED")) {
+        if ("COMPLETED".equals(status)) {
             token.setCompletedAt(LocalDateTime.now());
         }
 
-        logRepo.save(new TokenLog(token, "Status changed to " + status, null));
-        return tokenRepo.save(token);
+        logRepository.save(new TokenLog(token, "Status updated", null));
+        return tokenRepository.save(token);
     }
 
+    @Override
     public Token getToken(Long tokenId) {
-        return tokenRepo.findById(tokenId)
-                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
+        return tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new ResourceNotFoundException("not found"));
     }
 }
