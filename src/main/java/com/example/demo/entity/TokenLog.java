@@ -13,12 +13,11 @@ public class TokenLog {
     @ManyToOne
     private Token token;
 
-    private String logMessage;
+    private String status;
 
-    // 🔹 IMPORTANT: default value set
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime loggedAt;
 
-    // ===== GETTERS & SETTERS =====
+    // getters & setters
 
     public Long getId() {
         return id;
@@ -36,19 +35,19 @@ public class TokenLog {
         this.token = token;
     }
 
-    public String getLogMessage() {
-        return logMessage;
+    public String getStatus() {
+        return status;
     }
 
-    public void setLogMessage(String logMessage) {
-        this.logMessage = logMessage;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public LocalDateTime getLoggedAt() {
+        return loggedAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setLoggedAt(LocalDateTime loggedAt) {
+        this.loggedAt = loggedAt;
     }
 }
