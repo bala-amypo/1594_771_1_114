@@ -5,6 +5,8 @@ import com.example.demo.repository.ServiceCounterRepository;
 import com.example.demo.service.ServiceCounterService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ServiceCounterServiceImpl implements ServiceCounterService {
 
@@ -23,5 +25,11 @@ public class ServiceCounterServiceImpl implements ServiceCounterService {
 
         ServiceCounter saved = repository.save(counter);
         return saved;
+    }
+
+    // 👇 THIS METHOD WAS MISSING
+    @Override
+    public List<ServiceCounter> getActiveCounters() {
+        return repository.findByIsActiveTrue();
     }
 }

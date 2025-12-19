@@ -6,6 +6,7 @@ import com.example.demo.service.TokenLogService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class TokenLogServiceImpl implements TokenLogService {
@@ -29,5 +30,11 @@ public class TokenLogServiceImpl implements TokenLogService {
 
         TokenLog saved = repository.save(log);
         return saved;
+    }
+
+    // 👇 THIS METHOD WAS MISSING
+    @Override
+    public List<TokenLog> getLogs(Long tokenId) {
+        return repository.findByTokenId(tokenId);
     }
 }
