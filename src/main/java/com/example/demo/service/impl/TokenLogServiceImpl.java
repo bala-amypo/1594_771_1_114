@@ -31,8 +31,10 @@ public class TokenLogServiceImpl implements TokenLogService {
 
         TokenLog log = new TokenLog();
         log.setToken(token);
-        log.setLogMessage(message);
-        log.setCreatedAt(LocalDateTime.now());
+        log.setStatus(status);
+        log.setLoggedAt(LocalDateTime.now());
+        tokenLogRepository.save(log);
+
 
         return tokenLogRepository.save(log);
     }
