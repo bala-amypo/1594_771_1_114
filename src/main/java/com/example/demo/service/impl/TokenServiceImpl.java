@@ -33,7 +33,7 @@ public class TokenServiceImpl implements TokenService {
         ServiceCounter counter = counterRepository.findById(counterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Counter not found"));
 
-        Token token = new Token();          // ❌ never null
+        Token token = new Token();
         token.setServiceCounter(counter);
         token.setTokenNumber(UUID.randomUUID().toString());
         token.setStatus("WAITING");
@@ -46,9 +46,11 @@ public class TokenServiceImpl implements TokenService {
         qp.setPosition(1);
         queueRepository.save(qp);
 
+        // ✅ TokenLog (NO logMessage)
         TokenLog log = new TokenLog();
         log.setToken(savedToken);
-        log.setLogMessage("Token issued");
+        log.setStatus(savedToken.getStatus());
+        log.setLoggedAt(LocalDateTime.now());
         logRepository.save(log);
 
         return savedToken;
@@ -61,8 +63,15 @@ public class TokenServiceImpl implements TokenService {
                 .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
         token.setStatus(status);
-
         Token updated = tokenRepository.save(token);
+
+        // ✅ Status change ku log create pannanum
+        TokenLog log = new TokenLog();
+        log.setToken(updated);
+        log.setStatus(status);
+        log.setLoggedAt(LocalDateTime.now());
+        logRepository.save(log);
+
         return updated;
     }
 
