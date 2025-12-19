@@ -24,23 +24,22 @@ public class TokenLogServiceImpl implements TokenLogService {
     }
 
     @Override
-    public TokenLog addLog(Long tokenId, String message) {
+    public TokenLog addLog(Long tokenId, String status) {
 
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
         TokenLog log = new TokenLog();
         log.setToken(token);
-        log.setStatus(status);
+        log.setStatus(status);                 // ✅ status parameter
         log.setLoggedAt(LocalDateTime.now());
-        tokenLogRepository.save(log);
-
 
         return tokenLogRepository.save(log);
     }
 
     @Override
     public List<TokenLog> getLogs(Long tokenId) {
-        return tokenLogRepository.findByTokenId(tokenId);
+        return tokenLogRepository
+                .findByToken_IdOrderByLoggedAtAsc(tokenId); // ✅ correct repo method
     }
 }
