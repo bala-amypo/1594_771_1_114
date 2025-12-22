@@ -5,7 +5,9 @@ import java.time.LocalDateTime;
 
 @Entity
 public class QueuePosition {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
@@ -13,4 +15,15 @@ public class QueuePosition {
 
     private Integer position;
     private LocalDateTime updatedAt;
+
+    public QueuePosition() {
+    }
+
+    public QueuePosition(Token token, Integer position, LocalDateTime updatedAt) {
+        this.token = token;
+        this.position = position;
+        this.updatedAt = updatedAt;
+    }
+
+    // getters & setters
 }

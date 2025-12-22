@@ -2,9 +2,12 @@ package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
 @Entity
 public class TokenLog {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -13,8 +16,18 @@ public class TokenLog {
     private String logMessage;
     private LocalDateTime loggedAt;
 
+    public TokenLog() {
+    }
+
+    public TokenLog(Token token, String logMessage) {
+        this.token = token;
+        this.logMessage = logMessage;
+    }
+
     @PrePersist
     public void onCreate() {
-        loggedAt = LocalDateTime.now();
+        this.loggedAt = LocalDateTime.now();
     }
+
+    // getters & setters
 }
