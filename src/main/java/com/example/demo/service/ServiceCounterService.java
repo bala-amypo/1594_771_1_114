@@ -1,43 +1,15 @@
-package com.example.demo.service.impl;
+package com.example.demo.service;
 
 import com.example.demo.entity.ServiceCounter;
-import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.repository.ServiceCounterRepository;
-import com.example.demo.service.ServiceCounterService;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 
-@Service
-public class ServiceCounterServiceImpl implements ServiceCounterService {
+public interface ServiceCounterService {
 
-    private final ServiceCounterRepository counterRepository;
+    ServiceCounter createCounter(ServiceCounter counter);
 
-    public ServiceCounterServiceImpl(ServiceCounterRepository counterRepository) {
-        this.counterRepository = counterRepository;
-    }
+    List<ServiceCounter> getAllCounters();
 
-    @Override
-    public ServiceCounter createCounter(ServiceCounter counter) {
-        if (counter.getIsActive() == null) {
-            counter.setIsActive(true);
-        }
-        return counterRepository.save(counter);
-    }
+    List<ServiceCounter> getActiveCounters();
 
-    @Override
-    public List<ServiceCounter> getAllCounters() {
-        return counterRepository.findAll();
-    }
-
-    @Override
-    public List<ServiceCounter> getActiveCounters() {
-        return counterRepository.findByIsActiveTrue();
-    }
-
-    @Override
-    public ServiceCounter getCounterById(Long id) {
-        return counterRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Counter not found"));
-    }
+    ServiceCounter getCounterById(Long id);
 }
