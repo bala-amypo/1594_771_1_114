@@ -5,8 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface QueuePositionRepository
-        extends JpaRepository<QueuePosition, Long> {
+public interface QueuePositionRepository extends JpaRepository<QueuePosition, Long> {
 
-    Optional<QueuePosition> findByToken_Id(Long tokenId);
+    Optional<QueuePosition> findByTokenId(Long tokenId);
 }

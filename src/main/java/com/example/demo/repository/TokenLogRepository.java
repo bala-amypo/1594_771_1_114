@@ -5,8 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface TokenLogRepository
-        extends JpaRepository<TokenLog, Long> {
+public interface TokenLogRepository extends JpaRepository<TokenLog, Long> {
 
-    List<TokenLog> findByToken_IdOrderByLoggedAtAsc(Long tokenId);
+    List<TokenLog> findByTokenIdOrderByLoggedAtAsc(Long tokenId);
 }
