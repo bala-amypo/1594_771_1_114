@@ -1,7 +1,6 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import java.util.List;
 
 @Entity
 @Table(
@@ -28,9 +27,6 @@ public class User {
     @Column(nullable = false)
     private String role; // ADMIN, STAFF
 
-    @OneToMany(mappedBy = "serviceCounter")
-    private List<ServiceCounter> serviceCounters;
-
     public User() {}
 
     public User(String name, String email, String password, String role) {
@@ -40,8 +36,7 @@ public class User {
         this.role = role;
     }
 
-    // ===== GETTERS & SETTERS =====
-
+    // getters and setters
     public Long getId() {
         return id;
     }
@@ -70,7 +65,6 @@ public class User {
         return password;
     }
 
-    // password should be encoded in service layer
     public void setPassword(String password) {
         this.password = password;
     }
@@ -79,16 +73,7 @@ public class User {
         return role;
     }
 
-    // default role handled in service layer
     public void setRole(String role) {
         this.role = role;
-    }
-
-    public List<ServiceCounter> getServiceCounters() {
-        return serviceCounters;
-    }
-
-    public void setServiceCounters(List<ServiceCounter> serviceCounters) {
-        this.serviceCounters = serviceCounters;
     }
 }
