@@ -18,11 +18,10 @@ public class Token {
 
     @Column(nullable = false)
     private String status;
-    // WAITING, SERVING, COMPLETED, CANCELLED
 
     @ManyToOne
     @JoinColumn(name = "counter_id", nullable = false)
-    @JsonIgnore   // 🔥 THIS FIXES THE ERROR
+    @JsonIgnore   
     private ServiceCounter serviceCounter;
 
     @Column(nullable = false)
