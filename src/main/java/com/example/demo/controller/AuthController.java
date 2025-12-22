@@ -1,24 +1,31 @@
 package com.example.demo.controller;
 
+import com.example.demo.entity.User;
+import com.example.demo.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
 @RestController
-@RequestMapping("/auth")
-@Tag(name = "Authentication")
-public class AuthController {
+@RequestMapping("/users")
+public class UserController {
 
-    @PostMapping("/login")
-    @Operation(summary = "User login")
-    public String login() {
-        return "Login success";
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
-    @PostMapping("/register")
-    @Operation(summary = "User registration")
-    public String register() {
-        return "User registered";
+    @PostMapping
+    public User register(@RequestBody User user) {
+        return userService.registerUser(user);
+    }
+
+    @GetMapping("/{id}")
+    public User getById(@PathVariable Long id) {
+        return userService.getUserById(id);
+    }
+
+    @GetMapping("/email/{email}")
+    public User getByEmail(@PathVariable String email) {
+        return userService.getUserByEmail(email);
     }
 }

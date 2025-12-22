@@ -1,32 +1,32 @@
 package com.example.demo.controller;
 
+import com.example.demo.entity.Token;
+import com.example.demo.service.TokenService;
 import org.springframework.web.bind.annotation.*;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/tokens")
-@Tag(name = "Tokens")
 public class TokenController {
 
-    @PostMapping("/issue/{counterId}")
-    @Operation(summary = "Issue token")
-    public String issueToken(@PathVariable Long counterId) {
-        return "Token issued";
+    private final TokenService tokenService;
+
+    public TokenController(TokenService tokenService) {
+        this.tokenService = tokenService;
     }
 
-    @PutMapping("/status/{tokenId}")
-    @Operation(summary = "Update token status")
-    public String updateStatus(
-            @PathVariable Long tokenId,
-            @RequestParam String status) {
-        return "Status updated";
+    @PostMapping("/issue/{counterId}")
+    public Token issueToken(@PathVariable Long counterId) {
+        return tokenService.issueToken(counterId);
+    }
+
+    @PutMapping("/{tokenId}/status")
+    public Token updateStatus(@PathVariable Long tokenId,
+                              @RequestParam String status) {
+        return tokenService.updateTokenStatus(tokenId, status);
     }
 
     @GetMapping("/{tokenId}")
-    @Operation(summary = "Get token details")
-    public String getToken(@PathVariable Long tokenId) {
-        return "Token details";
+    public Token getToken(@PathVariable Long tokenId) {
+        return tokenService.getTokenById(tokenId);
     }
 }

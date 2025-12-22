@@ -1,24 +1,38 @@
 package com.example.demo.controller;
 
+import com.example.demo.entity.ServiceCounter;
+import com.example.demo.service.ServiceCounterService;
 import org.springframework.web.bind.annotation.*;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 
 @RestController
 @RequestMapping("/counters")
-@Tag(name = "Service Counters")
 public class ServiceCounterController {
 
+    private final ServiceCounterService counterService;
+
+    public ServiceCounterController(ServiceCounterService counterService) {
+        this.counterService = counterService;
+    }
+
     @PostMapping
-    @Operation(summary = "Add service counter")
-    public String addCounter() {
-        return "Counter added";
+    public ServiceCounter create(@RequestBody ServiceCounter counter) {
+        return counterService.createCounter(counter);
+    }
+
+    @GetMapping
+    public List<ServiceCounter> getAll() {
+        return counterService.getAllCounters();
     }
 
     @GetMapping("/active")
-    @Operation(summary = "Get active counters")
-    public String getActiveCounters() {
-        return "Active counters";
+    public List<ServiceCounter> getActive() {
+        return counterService.getActiveCounters();
+    }
+
+    @GetMapping("/{id}")
+    public ServiceCounter getById(@PathVariable Long id) {
+        return counterService.getCounterById(id);
     }
 }
