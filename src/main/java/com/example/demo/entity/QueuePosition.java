@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -13,6 +14,7 @@ public class QueuePosition {
 
     @OneToOne
     @JoinColumn(name = "token_id", nullable = false, unique = true)
+    @JsonIgnore   // 🔥 VERY IMPORTANT
     private Token token;
 
     @Column(nullable = false)
