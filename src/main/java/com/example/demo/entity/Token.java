@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,7 @@ public class Token {
 
     @ManyToOne
     @JoinColumn(name = "counter_id", nullable = false)
+    @JsonIgnore   // 🔥 THIS FIXES THE ERROR
     private ServiceCounter serviceCounter;
 
     @Column(nullable = false)
