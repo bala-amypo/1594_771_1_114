@@ -1,3 +1,4 @@
+
 @Entity
 public class ServiceCounter {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
