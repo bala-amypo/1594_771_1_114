@@ -14,7 +14,7 @@ public class QueuePosition {
 
     @OneToOne
     @JoinColumn(name = "token_id", nullable = false, unique = true)
-    @JsonIgnore   // 🔥 VERY IMPORTANT
+    @JsonIgnore   
     private Token token;
 
     @Column(nullable = false)
