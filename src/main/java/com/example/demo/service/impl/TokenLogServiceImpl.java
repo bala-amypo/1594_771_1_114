@@ -17,17 +17,20 @@ public class TokenLogServiceImpl implements TokenLogService {
     private final TokenRepository tokenRepository;
 
     public TokenLogServiceImpl(TokenLogRepository logRepository,
-                              TokenRepository tokenRepository) {
+                               TokenRepository tokenRepository) {
         this.logRepository = logRepository;
         this.tokenRepository = tokenRepository;
     }
 
     @Override
     public TokenLog addLog(Long tokenId, String message) {
+
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
         TokenLog log = new TokenLog(token, message, null);
+
+        // ✅ loggedAt auto-set by @PrePersist
         return logRepository.save(log);
     }
 

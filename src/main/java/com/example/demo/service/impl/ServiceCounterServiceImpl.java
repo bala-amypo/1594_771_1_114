@@ -18,6 +18,12 @@ public class ServiceCounterServiceImpl implements ServiceCounterService {
 
     @Override
     public ServiceCounter addCounter(ServiceCounter counter) {
+
+        // ✅ TEST EXPECTATION
+        if (counter.getIsActive() == null) {
+            counter.setIsActive(true);
+        }
+
         return serviceCounterRepository.save(counter);
     }
 
