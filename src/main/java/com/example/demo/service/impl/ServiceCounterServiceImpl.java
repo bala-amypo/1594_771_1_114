@@ -17,12 +17,18 @@ public class ServiceCounterServiceImpl implements ServiceCounterService {
     @Override
     public ServiceCounter addCounter(ServiceCounter counter) {
 
-        // ✅ Default active = true
+        if (counter == null) {
+            throw new IllegalArgumentException("Counter cannot be null");
+        }
+
+        // default active = true
         if (counter.getIsActive() == null) {
             counter.setIsActive(true);
         }
 
-        return counterRepository.save(counter);
+        // ✅ MUST return saved instance
+        ServiceCounter saved = counterRepository.save(counter);
+        return saved;
     }
 
     @Override
