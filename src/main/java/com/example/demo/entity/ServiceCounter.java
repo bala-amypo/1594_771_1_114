@@ -14,15 +14,23 @@ public class ServiceCounter {
 
     private String department;
 
-    private Boolean isActive;
+    // ✅ Default value required by tests
+    @Column(nullable = false)
+    private Boolean isActive = true;
 
     public ServiceCounter() {
+    }
+
+    public ServiceCounter(String counterName, String department) {
+        this.counterName = counterName;
+        this.department = department;
+        this.isActive = true;
     }
 
     public ServiceCounter(String counterName, String department, Boolean isActive) {
         this.counterName = counterName;
         this.department = department;
-        this.isActive = isActive;
+        this.isActive = isActive != null ? isActive : true;
     }
 
     // getters & setters
@@ -49,12 +57,12 @@ public class ServiceCounter {
     public void setDepartment(String department) {
         this.department = department;
     }
-    
+
     public Boolean getIsActive() {
         return isActive;
     }
-    
+
     public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
+        this.isActive = (isActive != null) ? isActive : true;
     }
 }
