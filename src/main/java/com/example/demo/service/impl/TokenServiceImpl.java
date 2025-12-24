@@ -46,11 +46,12 @@ public class TokenServiceImpl implements TokenService {
 
         Token savedToken = tokenRepository.save(token);
 
-        // Queue position (safe default = 1)
+        // Queue position (safe default)
         int position = 1;
         try {
             position = (int) queuePositionRepository.countWaitingTokens(counter.getId()) + 1;
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         QueuePosition queuePosition =
                 new QueuePosition(savedToken, position, LocalDateTime.now());
@@ -65,21 +66,14 @@ public class TokenServiceImpl implements TokenService {
 
     // ================= UPDATE STATUS =================
     @Override
-    public Token updateStatus(Long tokenId, String status) {
+    public Token updateStatus(Long tokenId, TokenStatus newStatus) {
 
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
-        TokenStatus newStatus;
-        try {
-            newStatus = TokenStatus.valueOf(status);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid status");
-        }
-
         TokenStatus current = token.getStatus();
 
-        // Final states cannot change
+        // ❌ Final states cannot change
         if (current == TokenStatus.COMPLETED || current == TokenStatus.CANCELLED) {
             throw new IllegalStateException("Invalid status transition");
         }
