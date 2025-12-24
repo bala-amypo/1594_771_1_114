@@ -27,12 +27,13 @@ public class AuthController {
 
     @PostMapping("/register")
     public User register(@RequestBody RegisterRequest request) {
-        User user = new User(
-                request.getName(),
-                request.getEmail(),
-                request.getPassword(),
-                request.getRole()
-        );
+
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        user.setRole(request.getRole());
+
         return userService.register(user);
     }
 
@@ -42,7 +43,7 @@ public class AuthController {
         User user = userService.findByEmail(request.getEmail());
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid credentials");
+            throw new RuntimeException("Invalid credentials");
         }
 
         String token = jwtTokenProvider.generateToken(
