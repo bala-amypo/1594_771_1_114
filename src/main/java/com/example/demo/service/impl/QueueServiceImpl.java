@@ -21,6 +21,7 @@ public class QueueServiceImpl implements QueueService {
     @Override
     public QueuePosition updateQueuePosition(Long tokenId, Integer position) {
 
+        // ✅ validation
         if (position == null || position < 1) {
             throw new IllegalArgumentException("Position must be >= 1");
         }
@@ -28,7 +29,10 @@ public class QueueServiceImpl implements QueueService {
         Token token = tokenRepo.findById(tokenId)
                 .orElseThrow(() -> new RuntimeException("Token not found"));
 
-        QueuePosition qp = new QueuePosition();
+        // ✅ IMPORTANT: reuse existing QueuePosition if present
+        QueuePosition qp = queueRepo.findByToken_Id(tokenId)
+                .orElseGet(QueuePosition::new);
+
         qp.setToken(token);
         qp.setPosition(position);
 
