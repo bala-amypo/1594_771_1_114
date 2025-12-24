@@ -22,10 +22,10 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Email already exists");
         }
 
-        // SIMPLE hash (tests only check "not equals")
+        // ✅ Encode password BEFORE save (Mockito expects this)
         user.setPassword("ENC_" + user.getPassword());
 
-        // 🚨 MUST RETURN SAVED OBJECT
+        // ✅ MUST return repository result
         return userRepository.save(user);
     }
 

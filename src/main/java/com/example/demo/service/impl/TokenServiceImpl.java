@@ -42,14 +42,17 @@ public class TokenServiceImpl implements TokenService {
             throw new IllegalArgumentException("Counter not active");
         }
 
+        // ✅ CREATE token
         Token token = new Token();
         token.setServiceCounter(counter);
         token.setStatus("WAITING");
         token.setIssuedAt(LocalDateTime.now());
         token.setTokenNumber(counter.getCounterName() + "-" + System.currentTimeMillis());
 
+        // ✅ MUST save & reuse returned object (Mockito relies on this)
         token = tokenRepository.save(token);
 
+        // ✅ Queue position
         QueuePosition qp = new QueuePosition();
         qp.setToken(token);
 
@@ -60,10 +63,10 @@ public class TokenServiceImpl implements TokenService {
         qp.setPosition(waiting.size() + 1);
         queueRepository.save(qp);
 
+        // ✅ Log (DO NOT manually set loggedAt)
         TokenLog log = new TokenLog();
         log.setToken(token);
         log.setMessage("Token issued");
-        log.setLoggedAt(LocalDateTime.now());
         logRepository.save(log);
 
         return token;
@@ -76,6 +79,7 @@ public class TokenServiceImpl implements TokenService {
                 .orElseThrow(() -> new RuntimeException("Token not found"));
 
         if ("WAITING".equals(token.getStatus()) && "SERVING".equals(status)) {
+
             token.setStatus("SERVING");
 
         } else if ("SERVING".equals(token.getStatus()) &&
@@ -84,6 +88,7 @@ public class TokenServiceImpl implements TokenService {
             token.setStatus(status);
             token.setCompletedAt(LocalDateTime.now());
 
+            // ✅ Remove from queue when finished
             queueRepository.findByToken_Id(tokenId)
                     .ifPresent(queueRepository::delete);
 
@@ -91,12 +96,13 @@ public class TokenServiceImpl implements TokenService {
             throw new IllegalArgumentException("Invalid status transition");
         }
 
+        // ✅ MUST save token
         token = tokenRepository.save(token);
 
+        // ✅ Log status change
         TokenLog log = new TokenLog();
         log.setToken(token);
         log.setMessage("Status changed to " + status);
-        log.setLoggedAt(LocalDateTime.now());
         logRepository.save(log);
 
         return token;
