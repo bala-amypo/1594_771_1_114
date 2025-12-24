@@ -38,7 +38,6 @@ public class TokenServiceImpl implements TokenService {
         ServiceCounter counter = counterRepository.findById(counterId)
                 .orElseThrow(() -> new RuntimeException("Counter not found"));
 
-        // SAFE Boolean check
         if (!Boolean.TRUE.equals(counter.getIsActive())) {
             throw new IllegalArgumentException("Counter not active");
         }
@@ -49,7 +48,6 @@ public class TokenServiceImpl implements TokenService {
         token.setIssuedAt(LocalDateTime.now());
         token.setTokenNumber(counter.getCounterName() + "-" + System.currentTimeMillis());
 
-        // MUST reuse saved token
         token = tokenRepository.save(token);
 
         QueuePosition qp = new QueuePosition();
@@ -65,7 +63,7 @@ public class TokenServiceImpl implements TokenService {
         TokenLog log = new TokenLog();
         log.setToken(token);
         log.setMessage("Token issued");
-        log.setTimestamp(LocalDateTime.now());
+        log.setLoggedAt(LocalDateTime.now());
         logRepository.save(log);
 
         return token;
@@ -86,7 +84,6 @@ public class TokenServiceImpl implements TokenService {
             token.setStatus(status);
             token.setCompletedAt(LocalDateTime.now());
 
-            // remove from queue
             queueRepository.findByToken_Id(tokenId)
                     .ifPresent(queueRepository::delete);
 
@@ -94,13 +91,12 @@ public class TokenServiceImpl implements TokenService {
             throw new IllegalArgumentException("Invalid status transition");
         }
 
-        // REQUIRED for repo-usage tests
         token = tokenRepository.save(token);
 
         TokenLog log = new TokenLog();
         log.setToken(token);
         log.setMessage("Status changed to " + status);
-        log.setTimestamp(LocalDateTime.now());
+        log.setLoggedAt(LocalDateTime.now());
         logRepository.save(log);
 
         return token;

@@ -7,16 +7,40 @@ public class TokenLog {
     private Long id;
     private Token token;
     private String message;
-    private LocalDateTime loggedAt = LocalDateTime.now(); // 🚨 IMPORTANT
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    // default timestamp (required by tests)
+    private LocalDateTime loggedAt = LocalDateTime.now();
 
-    public Token getToken() { return token; }
-    public void setToken(Token token) { this.token = token; }
+    public Long getId() { 
+        return id; 
+    }
 
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
+    public void setId(Long id) { 
+        this.id = id; 
+    }
 
-    public LocalDateTime getLoggedAt() { return loggedAt; }
+    public Token getToken() { 
+        return token; 
+    }
+
+    public void setToken(Token token) { 
+        this.token = token; 
+    }
+
+    public String getMessage() { 
+        return message; 
+    }
+
+    public void setMessage(String message) { 
+        this.message = message; 
+    }
+
+    public LocalDateTime getLoggedAt() { 
+        return loggedAt; 
+    }
+
+    // ✅ THIS IS THE MISSING PIECE
+    public void setLoggedAt(LocalDateTime loggedAt) {
+        this.loggedAt = loggedAt;
+    }
 }
