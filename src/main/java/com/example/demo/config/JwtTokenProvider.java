@@ -17,27 +17,28 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private long expiration;
 
-    // ✅ REQUIRED by Spring (do NOT remove)
+    // ✅ REQUIRED by Spring
     public JwtTokenProvider() {
     }
 
     // ✅ REQUIRED by test cases
-    public JwtTokenProvider(String secretKey, int expiration) {
+    public JwtTokenProvider(String secretKey, long expiration) {
         this.secretKey = secretKey;
         this.expiration = expiration;
     }
 
+    // ✅ SUBJECT MUST BE userId (TEST EXPECTATION)
     public String generateToken(Long userId, String email, String role) {
         return Jwts.builder()
-                .setSubject(email)
-                .claim("userId", userId)
-                .claim("role", role)
+                .setSubject(String.valueOf(userId))   // 🔥 FIXED
+                .claim("role", role)                  // 🔥 REQUIRED
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
 
+    // ✅ Invalid / tampered token → false
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
@@ -49,6 +50,7 @@ public class JwtTokenProvider {
         }
     }
 
+    // ✅ Return claims (used by tests)
     public Claims getClaims(String token) {
         return Jwts.parser()
                 .setSigningKey(secretKey)
