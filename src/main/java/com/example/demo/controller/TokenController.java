@@ -19,14 +19,14 @@ public class TokenController {
         return tokenService.issueToken(counterId);
     }
 
-    @PutMapping("/{tokenId}/status")
+    @PutMapping("/status/{tokenId}")
     public Token updateStatus(@PathVariable Long tokenId,
                               @RequestParam String status) {
-        return tokenService.updateTokenStatus(tokenId, status);
+        return tokenService.updateStatus(tokenId, status);
     }
 
     @GetMapping("/{tokenId}")
     public Token getToken(@PathVariable Long tokenId) {
-        return tokenService.getTokenById(tokenId);
+        return tokenService.getToken(tokenId);
     }
 }

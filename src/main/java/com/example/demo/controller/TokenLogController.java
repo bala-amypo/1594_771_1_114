@@ -24,6 +24,6 @@ public class TokenLogController {
 
     @GetMapping("/{tokenId}")
     public List<TokenLog> getLogs(@PathVariable Long tokenId) {
-        return tokenLogService.getLogsByTokenId(tokenId);
+        return tokenLogService.getLogs(tokenId);
     }
 }
