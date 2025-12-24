@@ -7,6 +7,7 @@ import com.example.demo.service.TokenService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -27,68 +28,80 @@ public class TokenServiceImpl implements TokenService {
         this.queuePositionRepository = queuePositionRepository;
     }
 
+    // ================= ISSUE TOKEN =================
     @Override
     public Token issueToken(Long counterId) {
+
         ServiceCounter counter = counterRepository.findById(counterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Counter not found"));
 
-        if (!counter.getIsActive()) {
+        if (!Boolean.TRUE.equals(counter.getIsActive())) {
             throw new IllegalArgumentException("Counter not active");
         }
 
         String tokenNumber = UUID.randomUUID().toString();
 
-        Token token = new Token(
-                tokenNumber,
-                counter,
-                "WAITING",
-                LocalDateTime.now(),
-                null
-        );
+        Token token = new Token();
+        token.setTokenNumber(tokenNumber);
+        token.setServiceCounter(counter);
+        token.setStatus(TokenStatus.WAITING);
 
         Token savedToken = tokenRepository.save(token);
 
-        QueuePosition position = new QueuePosition(savedToken, 1, LocalDateTime.now());
-        queuePositionRepository.save(position);
+        // Queue position = next available
+        int position = (int) queuePositionRepository.countWaitingTokens(counter.getId()) + 1;
+        QueuePosition queuePosition = new QueuePosition(savedToken, position);
+        queuePositionRepository.save(queuePosition);
 
-        TokenLog log = new TokenLog(savedToken, "Token issued", null);
-        tokenLogRepository.save(log);
+        tokenLogRepository.save(
+                new TokenLog(savedToken, "Token issued")
+        );
 
         return savedToken;
     }
 
+    // ================= UPDATE STATUS =================
     @Override
-    public Token updateStatus(Long tokenId, String status) {
+    public Token updateStatus(Long tokenId, TokenStatus newStatus) {
+
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
-        String current = token.getStatus();
+        TokenStatus current = token.getStatus();
 
-        if (current.equals("COMPLETED") || current.equals("CANCELLED")) {
-            throw new IllegalArgumentException("Invalid status");
+        // ❌ Final states cannot change
+        if (current == TokenStatus.COMPLETED || current == TokenStatus.CANCELLED) {
+            throw new IllegalStateException("Invalid status transition");
         }
 
-        if (!status.equals("SERVING") &&
-            !status.equals("COMPLETED") &&
-            !status.equals("CANCELLED")) {
-            throw new IllegalArgumentException("Invalid status");
+        // WAITING → SERVING
+        if (current == TokenStatus.WAITING && newStatus == TokenStatus.SERVING) {
+            token.setStatus(TokenStatus.SERVING);
         }
-
-        token.setStatus(status);
-
-        if (status.equals("COMPLETED") || status.equals("CANCELLED")) {
+        // SERVING → COMPLETED
+        else if (current == TokenStatus.SERVING && newStatus == TokenStatus.COMPLETED) {
+            token.setStatus(TokenStatus.COMPLETED);
             token.setCompletedAt(LocalDateTime.now());
+        }
+        // WAITING → CANCELLED
+        else if (current == TokenStatus.WAITING && newStatus == TokenStatus.CANCELLED) {
+            token.setStatus(TokenStatus.CANCELLED);
+            token.setCancelledAt(LocalDateTime.now());
+        }
+        else {
+            throw new IllegalStateException("Invalid status transition");
         }
 
         Token updated = tokenRepository.save(token);
 
         tokenLogRepository.save(
-                new TokenLog(updated, "Status changed to " + status, null)
+                new TokenLog(updated, "Status changed to " + updated.getStatus())
         );
 
         return updated;
     }
 
+    // ================= GET TOKEN =================
     @Override
     public Token getToken(Long tokenId) {
         return tokenRepository.findById(tokenId)
