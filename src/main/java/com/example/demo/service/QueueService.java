@@ -6,5 +6,5 @@ public interface QueueService {
 
     QueuePosition updateQueuePosition(Long tokenId, Integer newPosition);
 
-    QueuePosition getQueuePosition(Long tokenId);
+    QueuePosition getPosition(Long tokenId);
 }
