@@ -1,12 +1,12 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.entity.*;
-import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.*;
 import com.example.demo.service.TokenService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -14,97 +14,82 @@ public class TokenServiceImpl implements TokenService {
 
     private final TokenRepository tokenRepository;
     private final ServiceCounterRepository counterRepository;
-    private final TokenLogRepository tokenLogRepository;
-    private final QueuePositionRepository queuePositionRepository;
+    private final TokenLogRepository logRepository;
+    private final QueuePositionRepository queueRepository;
 
-    public TokenServiceImpl(TokenRepository tokenRepository,
-                            ServiceCounterRepository counterRepository,
-                            TokenLogRepository tokenLogRepository,
-                            QueuePositionRepository queuePositionRepository) {
+    public TokenServiceImpl(
+            TokenRepository tokenRepository,
+            ServiceCounterRepository counterRepository,
+            TokenLogRepository logRepository,
+            QueuePositionRepository queueRepository
+    ) {
         this.tokenRepository = tokenRepository;
         this.counterRepository = counterRepository;
-        this.tokenLogRepository = tokenLogRepository;
-        this.queuePositionRepository = queuePositionRepository;
+        this.logRepository = logRepository;
+        this.queueRepository = queueRepository;
     }
 
-    // ================= ISSUE TOKEN =================
     @Override
     public Token issueToken(Long counterId) {
-
         ServiceCounter counter = counterRepository.findById(counterId)
-                .orElseThrow(() -> new ResourceNotFoundException("Counter not found"));
+                .orElseThrow(() -> new RuntimeException("not found"));
 
-        if (!Boolean.TRUE.equals(counter.getIsActive())) {
-            throw new IllegalArgumentException("Counter not active");
+        if (!counter.getIsActive()) {
+            throw new IllegalArgumentException("not active");
         }
 
         Token token = new Token();
-        token.setTokenNumber(UUID.randomUUID().toString());
         token.setServiceCounter(counter);
-        token.setStatus(TokenStatus.WAITING);
-        token.setIssuedAt(LocalDateTime.now());
+        token.setStatus("WAITING");
+        token.setTokenNumber(UUID.randomUUID().toString());
 
-        Token savedToken = tokenRepository.save(token);
+        token = tokenRepository.save(token);
 
-        int position =
-                (int) queuePositionRepository
-                        .countByToken_ServiceCounter_IdAndToken_Status(
-                                counter.getId(),
-                                TokenStatus.WAITING
-                        ) + 1;
+        List<Token> waiting =
+                tokenRepository.findByServiceCounter_IdAndStatusOrderByIssuedAtAsc(
+                        counterId, "WAITING");
 
-        QueuePosition queuePosition =
-                new QueuePosition(savedToken, position, LocalDateTime.now());
-        queuePositionRepository.save(queuePosition);
+        QueuePosition qp = new QueuePosition();
+        qp.setToken(token);
+        qp.setPosition(waiting.size());
+        queueRepository.save(qp);
 
-        tokenLogRepository.save(
-                new TokenLog(savedToken, "Token issued")
-        );
+        TokenLog log = new TokenLog();
+        log.setToken(token);
+        log.setLogMessage("Token issued");
+        logRepository.save(log);
 
-        return savedToken;
+        return token;
     }
 
-    // ================= UPDATE STATUS =================
     @Override
-    public Token updateStatus(Long tokenId, TokenStatus newStatus) {
-
+    public Token updateStatus(Long tokenId, String status) {
         Token token = tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
+                .orElseThrow(() -> new RuntimeException("not found"));
 
-        TokenStatus current = token.getStatus();
-
-        if (current == TokenStatus.COMPLETED || current == TokenStatus.CANCELLED) {
-            throw new IllegalStateException("Invalid status transition");
+        if (token.getStatus().equals("WAITING") && status.equals("COMPLETED")) {
+            throw new IllegalArgumentException("Invalid status");
         }
 
-        if (current == TokenStatus.WAITING && newStatus == TokenStatus.SERVING) {
-            token.setStatus(TokenStatus.SERVING);
-        }
-        else if (current == TokenStatus.SERVING && newStatus == TokenStatus.COMPLETED) {
-            token.setStatus(TokenStatus.COMPLETED);
+        token.setStatus(status);
+
+        if (status.equals("COMPLETED") || status.equals("CANCELLED")) {
             token.setCompletedAt(LocalDateTime.now());
         }
-        else if (current == TokenStatus.WAITING && newStatus == TokenStatus.CANCELLED) {
-            token.setStatus(TokenStatus.CANCELLED);
-            token.setCancelledAt(LocalDateTime.now());
-        }
-        else {
-            throw new IllegalStateException("Invalid status transition");
-        }
 
-        Token updated = tokenRepository.save(token);
+        tokenRepository.save(token);
 
-        tokenLogRepository.save(
-                new TokenLog(updated, "Status changed to " + updated.getStatus())
-        );
+        TokenLog log = new TokenLog();
+        log.setToken(token);
+        log.setLogMessage("Status changed to " + status);
+        logRepository.save(log);
 
-        return updated;
+        return token;
     }
 
-    // ================= GET TOKEN =================
     @Override
     public Token getToken(Long tokenId) {
         return tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
+                .orElseThrow(() -> new RuntimeException("not found"));
     }
 }
