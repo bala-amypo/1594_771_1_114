@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Token;
+import com.example.demo.entity.TokenStatus;
 import com.example.demo.service.TokenService;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +23,15 @@ public class TokenController {
     @PutMapping("/status/{tokenId}")
     public Token updateStatus(@PathVariable Long tokenId,
                               @RequestParam String status) {
-        return tokenService.updateStatus(tokenId, status);
+
+        TokenStatus tokenStatus;
+        try {
+            tokenStatus = TokenStatus.valueOf(status);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid status");
+        }
+
+        return tokenService.updateStatus(tokenId, tokenStatus);
     }
 
     @GetMapping("/{tokenId}")
