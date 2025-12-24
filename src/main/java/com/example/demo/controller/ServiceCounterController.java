@@ -10,19 +10,19 @@ import java.util.List;
 @RequestMapping("/counters")
 public class ServiceCounterController {
 
-    private final ServiceCounterService serviceCounterService;
+    private final ServiceCounterService counterService;
 
-    public ServiceCounterController(ServiceCounterService serviceCounterService) {
-        this.serviceCounterService = serviceCounterService;
+    public ServiceCounterController(ServiceCounterService counterService) {
+        this.counterService = counterService;
     }
 
     @PostMapping
     public ServiceCounter addCounter(@RequestBody ServiceCounter counter) {
-        return serviceCounterService.addCounter(counter);
+        return counterService.addCounter(counter);
     }
 
     @GetMapping("/active")
     public List<ServiceCounter> getActiveCounters() {
-        return serviceCounterService.getActiveCounters();
+        return counterService.getActiveCounters();
     }
 }

@@ -10,20 +10,22 @@ import java.util.List;
 @RequestMapping("/logs")
 public class TokenLogController {
 
-    private final TokenLogService tokenLogService;
+    private final TokenLogService logService;
 
-    public TokenLogController(TokenLogService tokenLogService) {
-        this.tokenLogService = tokenLogService;
+    public TokenLogController(TokenLogService logService) {
+        this.logService = logService;
     }
 
     @PostMapping("/{tokenId}")
-    public TokenLog addLog(@PathVariable Long tokenId,
-                           @RequestParam String message) {
-        return tokenLogService.addLog(tokenId, message);
+    public TokenLog addLog(
+            @PathVariable Long tokenId,
+            @RequestParam String message
+    ) {
+        return logService.addLog(tokenId, message);
     }
 
     @GetMapping("/{tokenId}")
     public List<TokenLog> getLogs(@PathVariable Long tokenId) {
-        return tokenLogService.getLogs(tokenId);
+        return logService.getLogs(tokenId);
     }
 }
