@@ -17,10 +17,10 @@ public class Token {
     @JoinColumn(name = "service_counter_id")
     private ServiceCounter serviceCounter;
 
-    private String status; 
+    private String status = "WAITING";
     // WAITING / SERVING / COMPLETED / CANCELLED
 
-    private LocalDateTime issuedAt = LocalDateTime.now();
+    private LocalDateTime issuedAt;
 
     private LocalDateTime completedAt;
 
@@ -53,7 +53,7 @@ public class Token {
     public String getStatus() {
         return status;
     }
-    
+
     public void setStatus(String status) {
         this.status = status;
     }
