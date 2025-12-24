@@ -28,9 +28,9 @@ public class TokenLogServiceImpl implements TokenLogService {
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
-        TokenLog log = new TokenLog(token, message, null);
+        // ✅ Correct constructor
+        TokenLog log = new TokenLog(token, message);
 
-        // ✅ loggedAt auto-set by @PrePersist
         return logRepository.save(log);
     }
 
