@@ -6,9 +6,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
     name = "tokens",
-    uniqueConstraints = {
-        @UniqueConstraint(columnNames = "tokenNumber")
-    }
+    uniqueConstraints = @UniqueConstraint(columnNames = "tokenNumber")
 )
 public class Token {
 
@@ -16,28 +14,40 @@ public class Token {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ✅ Must be unique & not null
+    @Column(nullable = false, unique = true)
     private String tokenNumber;
 
+    // ✅ Must not be null
     @ManyToOne
-    @JoinColumn(name = "service_counter_id")
+    @JoinColumn(name = "service_counter_id", nullable = false)
     private ServiceCounter serviceCounter;
 
-    // ✅ MUST be enum (tests expect this)
+    // ✅ Enum required by tests
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TokenStatus status = TokenStatus.WAITING;
 
-    // ✅ Auto issue time
+    // ✅ Auto issue time (safe)
     @Column(nullable = false)
-    private LocalDateTime issuedAt = LocalDateTime.now();
+    private LocalDateTime issuedAt;
 
-    // ✅ Required by tests
+    // ✅ Required by completion tests
     private LocalDateTime completedAt;
 
     // ✅ Required by cancellation tests
     private LocalDateTime cancelledAt;
 
+    // JPA constructor
     public Token() {
+    }
+
+    // ✅ Ensure issuedAt is never null
+    @PrePersist
+    public void onCreate() {
+        if (this.issuedAt == null) {
+            this.issuedAt = LocalDateTime.now();
+        }
     }
 
     // getters & setters
@@ -83,6 +93,10 @@ public class Token {
 
     public void setStatus(TokenStatus status) {
         this.status = status;
+    }
+
+    public void setIssuedAt(LocalDateTime issuedAt) {
+        this.issuedAt = issuedAt;
     }
 
     public void setCompletedAt(LocalDateTime completedAt) {
