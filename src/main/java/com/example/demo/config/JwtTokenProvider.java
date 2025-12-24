@@ -17,6 +17,16 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private long expiration;
 
+    // ✅ REQUIRED by Spring (do NOT remove)
+    public JwtTokenProvider() {
+    }
+
+    // ✅ REQUIRED by test cases
+    public JwtTokenProvider(String secretKey, int expiration) {
+        this.secretKey = secretKey;
+        this.expiration = expiration;
+    }
+
     public String generateToken(Long userId, String email, String role) {
         return Jwts.builder()
                 .setSubject(email)
@@ -30,7 +40,9 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            Jwts.parser()
+                    .setSigningKey(secretKey)
+                    .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             return false;
