@@ -1,14 +1,8 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.QueuePosition;
-import com.example.demo.entity.ServiceCounter;
-import com.example.demo.entity.Token;
-import com.example.demo.entity.TokenLog;
+import com.example.demo.entity.*;
 import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.repository.QueuePositionRepository;
-import com.example.demo.repository.ServiceCounterRepository;
-import com.example.demo.repository.TokenLogRepository;
-import com.example.demo.repository.TokenRepository;
+import com.example.demo.repository.*;
 import com.example.demo.service.TokenService;
 import org.springframework.stereotype.Service;
 
@@ -20,17 +14,17 @@ public class TokenServiceImpl implements TokenService {
 
     private final TokenRepository tokenRepository;
     private final ServiceCounterRepository counterRepository;
-    private final QueuePositionRepository queueRepository;
-    private final TokenLogRepository logRepository;
+    private final TokenLogRepository tokenLogRepository;
+    private final QueuePositionRepository queuePositionRepository;
 
     public TokenServiceImpl(TokenRepository tokenRepository,
                             ServiceCounterRepository counterRepository,
-                            QueuePositionRepository queueRepository,
-                            TokenLogRepository logRepository) {
+                            TokenLogRepository tokenLogRepository,
+                            QueuePositionRepository queuePositionRepository) {
         this.tokenRepository = tokenRepository;
         this.counterRepository = counterRepository;
-        this.queueRepository = queueRepository;
-        this.logRepository = logRepository;
+        this.tokenLogRepository = tokenLogRepository;
+        this.queuePositionRepository = queuePositionRepository;
     }
 
     @Override
@@ -42,38 +36,42 @@ public class TokenServiceImpl implements TokenService {
             throw new IllegalArgumentException("Counter not active");
         }
 
-        Token token = new Token();
-        token.setTokenNumber(UUID.randomUUID().toString());
-        token.setStatus("WAITING");
-        token.setServiceCounter(counter);
-        token.setIssuedAt(LocalDateTime.now());
+        String tokenNumber = UUID.randomUUID().toString();
 
-        tokenRepository.save(token);
+        Token token = new Token(
+                tokenNumber,
+                counter,
+                "WAITING",
+                LocalDateTime.now(),
+                null
+        );
 
-        QueuePosition queuePosition = new QueuePosition(token, 1);
-        queueRepository.save(queuePosition);
+        Token savedToken = tokenRepository.save(token);
 
-        logRepository.save(new TokenLog(token, "Token issued"));
+        QueuePosition position = new QueuePosition(savedToken, 1, LocalDateTime.now());
+        queuePositionRepository.save(position);
 
-        return token;
+        TokenLog log = new TokenLog(savedToken, "Token issued", null);
+        tokenLogRepository.save(log);
+
+        return savedToken;
     }
 
     @Override
-    public Token updateTokenStatus(Long tokenId, String status) {
-        Token token = getTokenById(tokenId);
+    public Token updateStatus(Long tokenId, String status) {
+        Token token = tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
         String current = token.getStatus();
 
         if (current.equals("COMPLETED") || current.equals("CANCELLED")) {
-            throw new IllegalArgumentException("Invalid status transition");
+            throw new IllegalArgumentException("Invalid status");
         }
 
-        if (current.equals("WAITING") && !status.equals("SERVING") && !status.equals("CANCELLED")) {
-            throw new IllegalArgumentException("Invalid status transition");
-        }
-
-        if (current.equals("SERVING") && !status.equals("COMPLETED") && !status.equals("CANCELLED")) {
-            throw new IllegalArgumentException("Invalid status transition");
+        if (!status.equals("SERVING") &&
+            !status.equals("COMPLETED") &&
+            !status.equals("CANCELLED")) {
+            throw new IllegalArgumentException("Invalid status");
         }
 
         token.setStatus(status);
@@ -82,14 +80,17 @@ public class TokenServiceImpl implements TokenService {
             token.setCompletedAt(LocalDateTime.now());
         }
 
-        tokenRepository.save(token);
-        logRepository.save(new TokenLog(token, "Status changed to " + status));
+        Token updated = tokenRepository.save(token);
 
-        return token;
+        tokenLogRepository.save(
+                new TokenLog(updated, "Status changed to " + status, null)
+        );
+
+        return updated;
     }
 
     @Override
-    public Token getTokenById(Long tokenId) {
+    public Token getToken(Long tokenId) {
         return tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
     }

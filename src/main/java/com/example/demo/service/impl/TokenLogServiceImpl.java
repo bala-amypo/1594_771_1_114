@@ -17,7 +17,7 @@ public class TokenLogServiceImpl implements TokenLogService {
     private final TokenRepository tokenRepository;
 
     public TokenLogServiceImpl(TokenLogRepository logRepository,
-                               TokenRepository tokenRepository) {
+                              TokenRepository tokenRepository) {
         this.logRepository = logRepository;
         this.tokenRepository = tokenRepository;
     }
@@ -27,12 +27,12 @@ public class TokenLogServiceImpl implements TokenLogService {
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
-        TokenLog log = new TokenLog(token, message);
+        TokenLog log = new TokenLog(token, message, null);
         return logRepository.save(log);
     }
 
     @Override
-    public List<TokenLog> getLogsByTokenId(Long tokenId) {
-        return logRepository.findByTokenIdOrderByLoggedAtAsc(tokenId);
+    public List<TokenLog> getLogs(Long tokenId) {
+        return logRepository.findByToken_IdOrderByLoggedAtAsc(tokenId);
     }
 }

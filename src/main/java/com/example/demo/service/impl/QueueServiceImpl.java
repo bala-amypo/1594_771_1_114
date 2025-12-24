@@ -31,18 +31,18 @@ public class QueueServiceImpl implements QueueService {
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
-        QueuePosition queuePosition = queueRepository.findByTokenId(tokenId)
-                .orElse(new QueuePosition(token, newPosition));
+        QueuePosition position = queueRepository.findByToken_Id(tokenId)
+                .orElse(new QueuePosition(token, newPosition, LocalDateTime.now()));
 
-        queuePosition.setPosition(newPosition);
-        queuePosition.setUpdatedAt(LocalDateTime.now());
+        position.setPosition(newPosition);
+        position.setUpdatedAt(LocalDateTime.now());
 
-        return queueRepository.save(queuePosition);
+        return queueRepository.save(position);
     }
 
     @Override
-    public QueuePosition getQueuePosition(Long tokenId) {
-        return queueRepository.findByTokenId(tokenId)
+    public QueuePosition getPosition(Long tokenId) {
+        return queueRepository.findByToken_Id(tokenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Queue position not found"));
     }
 }
