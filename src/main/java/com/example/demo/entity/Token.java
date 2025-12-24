@@ -4,9 +4,12 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tokens", uniqueConstraints = {
+@Table(
+    name = "tokens",
+    uniqueConstraints = {
         @UniqueConstraint(columnNames = "tokenNumber")
-})
+    }
+)
 public class Token {
 
     @Id
@@ -19,22 +22,22 @@ public class Token {
     @JoinColumn(name = "service_counter_id")
     private ServiceCounter serviceCounter;
 
-    private String status;
+    // ✅ MUST be enum (tests expect this)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TokenStatus status = TokenStatus.WAITING;
 
-    private LocalDateTime issuedAt;
+    // ✅ Auto issue time
+    @Column(nullable = false)
+    private LocalDateTime issuedAt = LocalDateTime.now();
 
+    // ✅ Required by tests
     private LocalDateTime completedAt;
 
-    public Token() {
-    }
+    // ✅ Required by cancellation tests
+    private LocalDateTime cancelledAt;
 
-    public Token(String tokenNumber, ServiceCounter serviceCounter, String status,
-                 LocalDateTime issuedAt, LocalDateTime completedAt) {
-        this.tokenNumber = tokenNumber;
-        this.serviceCounter = serviceCounter;
-        this.status = status;
-        this.issuedAt = issuedAt;
-        this.completedAt = completedAt;
+    public Token() {
     }
 
     // getters & setters
@@ -46,6 +49,26 @@ public class Token {
         return tokenNumber;
     }
 
+    public ServiceCounter getServiceCounter() {
+        return serviceCounter;
+    }
+
+    public TokenStatus getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getIssuedAt() {
+        return issuedAt;
+    }
+
+    public LocalDateTime getCompletedAt() {
+        return completedAt;
+    }
+
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -54,35 +77,19 @@ public class Token {
         this.tokenNumber = tokenNumber;
     }
 
-    public ServiceCounter getServiceCounter() {
-        return serviceCounter;
-    }
-
     public void setServiceCounter(ServiceCounter serviceCounter) {
         this.serviceCounter = serviceCounter;
     }
 
-    public String getStatus() {
-        return status;
-    }
-    
-    public void setStatus(String status) {
+    public void setStatus(TokenStatus status) {
         this.status = status;
     }
-    
-    public LocalDateTime getIssuedAt() {
-        return issuedAt;
-    }
-    
-    public void setIssuedAt(LocalDateTime issuedAt) {
-        this.issuedAt = issuedAt;
-    }
-    
-    public LocalDateTime getCompletedAt() {
-        return completedAt;
-    }
-    
+
     public void setCompletedAt(LocalDateTime completedAt) {
         this.completedAt = completedAt;
+    }
+
+    public void setCancelledAt(LocalDateTime cancelledAt) {
+        this.cancelledAt = cancelledAt;
     }
 }
