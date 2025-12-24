@@ -1,56 +1,44 @@
 package com.example.demo.config;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
+import io.jsonwebtoken.*;
 import java.util.Date;
 
-@Component
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    private final String secretKey;
+    private final long validityInMs;
 
-    @Value("${jwt.expiration}")
-    private long expiration;
-
-    // ✅ REQUIRED by Spring
-    public JwtTokenProvider() {
-    }
-
-    // ✅ REQUIRED by test cases
-    public JwtTokenProvider(String secretKey, long expiration) {
+    public JwtTokenProvider(String secretKey, long validityInMs) {
         this.secretKey = secretKey;
-        this.expiration = expiration;
+        this.validityInMs = validityInMs;
     }
 
-    // ✅ SUBJECT MUST BE userId (TEST EXPECTATION)
     public String generateToken(Long userId, String email, String role) {
+
+        Claims claims = Jwts.claims().setSubject(userId.toString());
+        claims.put("email", email);
+        claims.put("role", role);
+
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + validityInMs);
+
         return Jwts.builder()
-                .setSubject(String.valueOf(userId))   // 🔥 FIXED
-                .claim("role", role)                  // 🔥 REQUIRED
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
 
-    // ✅ Invalid / tampered token → false
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
-                    .setSigningKey(secretKey)
-                    .parseClaimsJws(token);
+            getClaims(token);
             return true;
         } catch (Exception e) {
             return false;
         }
     }
 
-    // ✅ Return claims (used by tests)
     public Claims getClaims(String token) {
         return Jwts.parser()
                 .setSigningKey(secretKey)
