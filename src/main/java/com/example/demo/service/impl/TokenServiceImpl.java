@@ -46,12 +46,12 @@ public class TokenServiceImpl implements TokenService {
 
         Token savedToken = tokenRepository.save(token);
 
-        // Queue position (safe default)
-        int position = 1;
-        try {
-            position = (int) queuePositionRepository.countWaitingTokens(counter.getId()) + 1;
-        } catch (Exception ignored) {
-        }
+        int position =
+                (int) queuePositionRepository
+                        .countByToken_ServiceCounter_IdAndToken_Status(
+                                counter.getId(),
+                                TokenStatus.WAITING
+                        ) + 1;
 
         QueuePosition queuePosition =
                 new QueuePosition(savedToken, position, LocalDateTime.now());
@@ -73,21 +73,17 @@ public class TokenServiceImpl implements TokenService {
 
         TokenStatus current = token.getStatus();
 
-        // ❌ Final states cannot change
         if (current == TokenStatus.COMPLETED || current == TokenStatus.CANCELLED) {
             throw new IllegalStateException("Invalid status transition");
         }
 
-        // WAITING → SERVING
         if (current == TokenStatus.WAITING && newStatus == TokenStatus.SERVING) {
             token.setStatus(TokenStatus.SERVING);
         }
-        // SERVING → COMPLETED
         else if (current == TokenStatus.SERVING && newStatus == TokenStatus.COMPLETED) {
             token.setStatus(TokenStatus.COMPLETED);
             token.setCompletedAt(LocalDateTime.now());
         }
-        // WAITING → CANCELLED
         else if (current == TokenStatus.WAITING && newStatus == TokenStatus.CANCELLED) {
             token.setStatus(TokenStatus.CANCELLED);
             token.setCancelledAt(LocalDateTime.now());
