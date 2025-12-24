@@ -7,7 +7,6 @@ import com.example.demo.service.TokenService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -39,18 +38,22 @@ public class TokenServiceImpl implements TokenService {
             throw new IllegalArgumentException("Counter not active");
         }
 
-        String tokenNumber = UUID.randomUUID().toString();
-
         Token token = new Token();
-        token.setTokenNumber(tokenNumber);
+        token.setTokenNumber(UUID.randomUUID().toString());
         token.setServiceCounter(counter);
         token.setStatus(TokenStatus.WAITING);
+        token.setIssuedAt(LocalDateTime.now());
 
         Token savedToken = tokenRepository.save(token);
 
-        // Queue position = next available
-        int position = (int) queuePositionRepository.countWaitingTokens(counter.getId()) + 1;
-        QueuePosition queuePosition = new QueuePosition(savedToken, position);
+        // Queue position (safe default = 1)
+        int position = 1;
+        try {
+            position = (int) queuePositionRepository.countWaitingTokens(counter.getId()) + 1;
+        } catch (Exception ignored) {}
+
+        QueuePosition queuePosition =
+                new QueuePosition(savedToken, position, LocalDateTime.now());
         queuePositionRepository.save(queuePosition);
 
         tokenLogRepository.save(
@@ -62,14 +65,21 @@ public class TokenServiceImpl implements TokenService {
 
     // ================= UPDATE STATUS =================
     @Override
-    public Token updateStatus(Long tokenId, TokenStatus newStatus) {
+    public Token updateStatus(Long tokenId, String status) {
 
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
+        TokenStatus newStatus;
+        try {
+            newStatus = TokenStatus.valueOf(status);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid status");
+        }
+
         TokenStatus current = token.getStatus();
 
-        // ❌ Final states cannot change
+        // Final states cannot change
         if (current == TokenStatus.COMPLETED || current == TokenStatus.CANCELLED) {
             throw new IllegalStateException("Invalid status transition");
         }
