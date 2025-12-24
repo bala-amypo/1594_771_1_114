@@ -1,73 +1,114 @@
-@Override
-public Token issueToken(Long counterId) {
+package com.example.demo.service.impl;
 
-    ServiceCounter counter = counterRepository.findById(counterId)
-            .orElseThrow(() -> new RuntimeException("Counter not found"));
+import com.example.demo.entity.QueuePosition;
+import com.example.demo.entity.ServiceCounter;
+import com.example.demo.entity.Token;
+import com.example.demo.entity.TokenLog;
+import com.example.demo.repository.QueuePositionRepository;
+import com.example.demo.repository.ServiceCounterRepository;
+import com.example.demo.repository.TokenLogRepository;
+import com.example.demo.repository.TokenRepository;
+import com.example.demo.service.TokenService;
 
-    // ✅ SAFE Boolean check
-    if (!Boolean.TRUE.equals(counter.getIsActive())) {
-        throw new IllegalArgumentException("Counter not active");
+import java.time.LocalDateTime;
+import java.util.List;
+
+public class TokenServiceImpl implements TokenService {
+
+    private final TokenRepository tokenRepository;
+    private final ServiceCounterRepository counterRepository;
+    private final TokenLogRepository logRepository;
+    private final QueuePositionRepository queueRepository;
+
+    public TokenServiceImpl(
+            TokenRepository tokenRepository,
+            ServiceCounterRepository counterRepository,
+            TokenLogRepository logRepository,
+            QueuePositionRepository queueRepository) {
+
+        this.tokenRepository = tokenRepository;
+        this.counterRepository = counterRepository;
+        this.logRepository = logRepository;
+        this.queueRepository = queueRepository;
     }
 
-    Token token = new Token();
-    token.setServiceCounter(counter);
-    token.setStatus("WAITING");
-    token.setIssuedAt(LocalDateTime.now());
-    token.setTokenNumber(counter.getCounterName() + "-" + System.currentTimeMillis());
+    @Override
+    public Token issueToken(Long counterId) {
 
-    // ✅ MUST reuse saved object
-    token = tokenRepository.save(token);
+        ServiceCounter counter = counterRepository.findById(counterId)
+                .orElseThrow(() -> new RuntimeException("Counter not found"));
 
-    QueuePosition qp = new QueuePosition();
-    qp.setToken(token);
+        // SAFE Boolean check
+        if (!Boolean.TRUE.equals(counter.getIsActive())) {
+            throw new IllegalArgumentException("Counter not active");
+        }
 
-    List<Token> waiting =
-            tokenRepository.findByServiceCounter_IdAndStatusOrderByIssuedAtAsc(
-                    counterId, "WAITING");
+        Token token = new Token();
+        token.setServiceCounter(counter);
+        token.setStatus("WAITING");
+        token.setIssuedAt(LocalDateTime.now());
+        token.setTokenNumber(counter.getCounterName() + "-" + System.currentTimeMillis());
 
-    qp.setPosition(waiting.size() + 1);
-    queueRepository.save(qp);
+        // MUST reuse saved token
+        token = tokenRepository.save(token);
 
-    TokenLog log = new TokenLog();
-    log.setToken(token);
-    log.setMessage("Token issued");
-    log.setTimestamp(LocalDateTime.now());
-    logRepository.save(log);
+        QueuePosition qp = new QueuePosition();
+        qp.setToken(token);
 
-    return token;
-}
+        List<Token> waiting =
+                tokenRepository.findByServiceCounter_IdAndStatusOrderByIssuedAtAsc(
+                        counterId, "WAITING");
 
-@Override
-public Token updateStatus(Long tokenId, String status) {
+        qp.setPosition(waiting.size() + 1);
+        queueRepository.save(qp);
 
-    Token token = tokenRepository.findById(tokenId)
-            .orElseThrow(() -> new RuntimeException("Token not found"));
+        TokenLog log = new TokenLog();
+        log.setToken(token);
+        log.setMessage("Token issued");
+        log.setTimestamp(LocalDateTime.now());
+        logRepository.save(log);
 
-    if ("WAITING".equals(token.getStatus()) && "SERVING".equals(status)) {
-        token.setStatus("SERVING");
-
-    } else if ("SERVING".equals(token.getStatus()) &&
-            ("COMPLETED".equals(status) || "CANCELLED".equals(status))) {
-
-        token.setStatus(status);
-        token.setCompletedAt(LocalDateTime.now());
-
-        // ✅ REQUIRED: remove queue position
-        queueRepository.findByToken_Id(tokenId)
-                .ifPresent(queueRepository::delete);
-
-    } else {
-        throw new IllegalArgumentException("Invalid status transition");
+        return token;
     }
 
-    // ✅ REQUIRED: save token for repo-usage tests
-    token = tokenRepository.save(token);
+    @Override
+    public Token updateStatus(Long tokenId, String status) {
 
-    TokenLog log = new TokenLog();
-    log.setToken(token);
-    log.setMessage("Status changed to " + status);
-    log.setTimestamp(LocalDateTime.now());
-    logRepository.save(log);
+        Token token = tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new RuntimeException("Token not found"));
 
-    return token;
+        if ("WAITING".equals(token.getStatus()) && "SERVING".equals(status)) {
+            token.setStatus("SERVING");
+
+        } else if ("SERVING".equals(token.getStatus()) &&
+                ("COMPLETED".equals(status) || "CANCELLED".equals(status))) {
+
+            token.setStatus(status);
+            token.setCompletedAt(LocalDateTime.now());
+
+            // remove from queue
+            queueRepository.findByToken_Id(tokenId)
+                    .ifPresent(queueRepository::delete);
+
+        } else {
+            throw new IllegalArgumentException("Invalid status transition");
+        }
+
+        // REQUIRED for repo-usage tests
+        token = tokenRepository.save(token);
+
+        TokenLog log = new TokenLog();
+        log.setToken(token);
+        log.setMessage("Status changed to " + status);
+        log.setTimestamp(LocalDateTime.now());
+        logRepository.save(log);
+
+        return token;
+    }
+
+    @Override
+    public Token getToken(Long id) {
+        return tokenRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Token not found"));
+    }
 }
