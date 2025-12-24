@@ -4,7 +4,8 @@ public Token issueToken(Long counterId) {
     ServiceCounter counter = counterRepository.findById(counterId)
             .orElseThrow(() -> new RuntimeException("Counter not found"));
 
-    if (!counter.getIsActive()) {
+    // ✅ SAFE Boolean check
+    if (!Boolean.TRUE.equals(counter.getIsActive())) {
         throw new IllegalArgumentException("Counter not active");
     }
 
@@ -14,6 +15,7 @@ public Token issueToken(Long counterId) {
     token.setIssuedAt(LocalDateTime.now());
     token.setTokenNumber(counter.getCounterName() + "-" + System.currentTimeMillis());
 
+    // ✅ MUST reuse saved object
     token = tokenRepository.save(token);
 
     QueuePosition qp = new QueuePosition();
@@ -50,9 +52,16 @@ public Token updateStatus(Long tokenId, String status) {
         token.setStatus(status);
         token.setCompletedAt(LocalDateTime.now());
 
+        // ✅ REQUIRED: remove queue position
+        queueRepository.findByToken_Id(tokenId)
+                .ifPresent(queueRepository::delete);
+
     } else {
         throw new IllegalArgumentException("Invalid status transition");
     }
+
+    // ✅ REQUIRED: save token for repo-usage tests
+    token = tokenRepository.save(token);
 
     TokenLog log = new TokenLog();
     log.setToken(token);
