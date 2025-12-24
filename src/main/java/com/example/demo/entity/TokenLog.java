@@ -1,6 +1,5 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -13,21 +12,20 @@ public class TokenLog {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "token_id", nullable = false)
-    @JsonIgnore   // 🔥 VERY IMPORTANT
+    @JoinColumn(name = "token_id")
     private Token token;
 
-    @Column(nullable = false)
-    private String message;
+    private String logMessage;
 
-    @Column(nullable = false)
     private LocalDateTime loggedAt;
 
-    public TokenLog() {}
+    public TokenLog() {
+    }
 
-    public TokenLog(Token token, String message) {
+    public TokenLog(Token token, String logMessage, LocalDateTime loggedAt) {
         this.token = token;
-        this.message = message;
+        this.logMessage = logMessage;
+        this.loggedAt = loggedAt;
     }
 
     @PrePersist
@@ -35,36 +33,32 @@ public class TokenLog {
         this.loggedAt = LocalDateTime.now();
     }
 
-    // getters and setters
+    // getters & setters
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Token getToken() {
         return token;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public void setToken(Token token) {
         this.token = token;
     }
 
-    public String getMessage() {
-        return message;
+    public String getLogMessage() {
+        return logMessage;
     }
-
-    public void setMessage(String message) {
-        this.message = message;
+    
+    public void setLogMessage(String logMessage) {
+        this.logMessage = logMessage;
     }
-
+    
     public LocalDateTime getLoggedAt() {
         return loggedAt;
-    }
-
-    public void setLoggedAt(LocalDateTime loggedAt) {
-        this.loggedAt = loggedAt;
     }
 }

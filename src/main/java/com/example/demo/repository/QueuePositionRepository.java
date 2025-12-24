@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface QueuePositionRepository extends JpaRepository<QueuePosition, Long> {
 
-    Optional<QueuePosition> findByTokenId(Long tokenId);
+    Optional<QueuePosition> findByToken_Id(Long tokenId);
 }
