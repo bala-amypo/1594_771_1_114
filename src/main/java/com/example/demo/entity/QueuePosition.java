@@ -10,12 +10,13 @@ public class QueuePosition {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "token_id", unique = true)
     private Token token;
 
     private Integer position;
 
+    // ✅ auto timestamp (NO setter)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     // -------- getters & setters --------
@@ -39,16 +40,12 @@ public class QueuePosition {
     public Integer getPosition() {
         return position;
     }
-    
+
     public void setPosition(Integer position) {
         this.position = position;
     }
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }

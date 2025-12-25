@@ -1,13 +1,7 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.QueuePosition;
-import com.example.demo.entity.ServiceCounter;
-import com.example.demo.entity.Token;
-import com.example.demo.entity.TokenLog;
-import com.example.demo.repository.QueuePositionRepository;
-import com.example.demo.repository.ServiceCounterRepository;
-import com.example.demo.repository.TokenLogRepository;
-import com.example.demo.repository.TokenRepository;
+import com.example.demo.entity.*;
+import com.example.demo.repository.*;
 import com.example.demo.service.TokenService;
 
 import java.time.LocalDateTime;
@@ -42,28 +36,25 @@ public class TokenServiceImpl implements TokenService {
             throw new IllegalArgumentException("Counter not active");
         }
 
-        // ✅ CREATE token
         Token token = new Token();
         token.setServiceCounter(counter);
         token.setStatus("WAITING");
         token.setIssuedAt(LocalDateTime.now());
         token.setTokenNumber(counter.getCounterName() + "-" + System.currentTimeMillis());
 
-        // ✅ MUST save & reuse returned object (Mockito relies on this)
+        // 🔥 SAVE FIRST
         token = tokenRepository.save(token);
 
-        // ✅ Queue position
-        QueuePosition qp = new QueuePosition();
-        qp.setToken(token);
-
+        // 🔥 COUNT AFTER SAVE
         List<Token> waiting =
                 tokenRepository.findByServiceCounter_IdAndStatusOrderByIssuedAtAsc(
                         counterId, "WAITING");
 
-        qp.setPosition(waiting.size() + 1);
+        QueuePosition qp = new QueuePosition();
+        qp.setToken(token);
+        qp.setPosition(waiting.size());
         queueRepository.save(qp);
 
-        // ✅ Log (DO NOT manually set loggedAt)
         TokenLog log = new TokenLog();
         log.setToken(token);
         log.setMessage("Token issued");
@@ -81,14 +72,15 @@ public class TokenServiceImpl implements TokenService {
         if ("WAITING".equals(token.getStatus()) && "SERVING".equals(status)) {
 
             token.setStatus("SERVING");
+            token = tokenRepository.save(token);
 
         } else if ("SERVING".equals(token.getStatus()) &&
                 ("COMPLETED".equals(status) || "CANCELLED".equals(status))) {
 
             token.setStatus(status);
             token.setCompletedAt(LocalDateTime.now());
+            token = tokenRepository.save(token);
 
-            // ✅ Remove from queue when finished
             queueRepository.findByToken_Id(tokenId)
                     .ifPresent(queueRepository::delete);
 
@@ -96,10 +88,6 @@ public class TokenServiceImpl implements TokenService {
             throw new IllegalArgumentException("Invalid status transition");
         }
 
-        // ✅ MUST save token
-        token = tokenRepository.save(token);
-
-        // ✅ Log status change
         TokenLog log = new TokenLog();
         log.setToken(token);
         log.setMessage("Status changed to " + status);
