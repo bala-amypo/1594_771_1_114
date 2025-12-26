@@ -14,7 +14,6 @@ public class TokenLogServiceImpl implements TokenLogService {
     private final TokenLogRepository logRepository;
     private final TokenRepository tokenRepository;
 
-    // ✅ CONSTRUCTOR ORDER
     public TokenLogServiceImpl(
             TokenLogRepository logRepository,
             TokenRepository tokenRepository
@@ -33,6 +32,7 @@ public class TokenLogServiceImpl implements TokenLogService {
         log.setToken(token);
         log.setLogMessage(message);
 
+        // ✅ SAME instance saved
         return logRepository.save(log);
     }
 

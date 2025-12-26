@@ -10,13 +10,13 @@ public class ServiceCounterServiceImpl implements ServiceCounterService {
 
     private final ServiceCounterRepository counterRepository;
 
-    // ✅ CONSTRUCTOR ORDER
     public ServiceCounterServiceImpl(ServiceCounterRepository counterRepository) {
         this.counterRepository = counterRepository;
     }
 
     @Override
     public ServiceCounter addCounter(ServiceCounter counter) {
+        // ✅ DO NOT create new object
         return counterRepository.save(counter);
     }
 

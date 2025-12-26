@@ -6,14 +6,11 @@ import com.example.demo.repository.UserRepository;
 import com.example.demo.service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.util.Optional;
-
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    // ✅ CONSTRUCTOR ORDER MATTERS
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -21,19 +18,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public User register(User user) {
 
-        Optional<User> existing = userRepository.findByEmail(user.getEmail());
-        if (existing.isPresent()) {
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
         }
 
-        // default role
+        // encode SAME instance
+        user.setPassword(encoder.encode(user.getPassword()));
+
         if (user.getRole() == null) {
             user.setRole("STAFF");
         }
 
-        // encode password
-        user.setPassword(encoder.encode(user.getPassword()));
-
+        // ✅ VERY IMPORTANT: save SAME object
         return userRepository.save(user);
     }
 

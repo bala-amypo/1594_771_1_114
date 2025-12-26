@@ -14,7 +14,6 @@ public class QueueServiceImpl implements QueueService {
     private final QueuePositionRepository queueRepository;
     private final TokenRepository tokenRepository;
 
-    // ✅ CONSTRUCTOR ORDER
     public QueueServiceImpl(
             QueuePositionRepository queueRepository,
             TokenRepository tokenRepository
@@ -40,6 +39,7 @@ public class QueueServiceImpl implements QueueService {
         qp.setPosition(newPosition);
         qp.setUpdatedAt(LocalDateTime.now());
 
+        // ✅ SAME instance saved
         return queueRepository.save(qp);
     }
 

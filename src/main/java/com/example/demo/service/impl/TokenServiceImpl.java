@@ -22,7 +22,7 @@ public class TokenServiceImpl implements TokenService {
     private final TokenLogRepository logRepository;
     private final QueuePositionRepository queueRepository;
 
-    // ✅ CONSTRUCTOR ORDER EXACTLY AS TEST
+    // ⚠️ ORDER MUST MATCH TEST
     public TokenServiceImpl(
             TokenRepository tokenRepository,
             ServiceCounterRepository counterRepository,
@@ -51,11 +51,12 @@ public class TokenServiceImpl implements TokenService {
         token.setIssuedAt(LocalDateTime.now());
         token.setTokenNumber("TOKEN-" + UUID.randomUUID());
 
+        // ✅ SAME INSTANCE saved
         Token saved = tokenRepository.save(token);
 
-        // queue position
         List<Token> waiting =
-                tokenRepository.findByServiceCounter_IdAndStatusOrderByIssuedAtAsc(counterId, "WAITING");
+                tokenRepository.findByServiceCounter_IdAndStatusOrderByIssuedAtAsc(
+                        counterId, "WAITING");
 
         QueuePosition qp = new QueuePosition();
         qp.setToken(saved);
@@ -63,7 +64,6 @@ public class TokenServiceImpl implements TokenService {
         qp.setUpdatedAt(LocalDateTime.now());
         queueRepository.save(qp);
 
-        // log
         TokenLog log = new TokenLog();
         log.setToken(saved);
         log.setLogMessage("Token issued");
@@ -81,8 +81,11 @@ public class TokenServiceImpl implements TokenService {
         String current = token.getStatus();
 
         boolean valid =
-                (current.equals("WAITING") && (status.equals("SERVING") || status.equals("CANCELLED")))
-                        || (current.equals("SERVING") && (status.equals("COMPLETED") || status.equals("CANCELLED")));
+                (current.equals("WAITING") &&
+                        (status.equals("SERVING") || status.equals("CANCELLED")))
+                        ||
+                (current.equals("SERVING") &&
+                        (status.equals("COMPLETED") || status.equals("CANCELLED")));
 
         if (!valid) {
             throw new IllegalArgumentException("Invalid status transition");
@@ -94,6 +97,7 @@ public class TokenServiceImpl implements TokenService {
             token.setCompletedAt(LocalDateTime.now());
         }
 
+        // ✅ SAME token instance
         Token saved = tokenRepository.save(token);
 
         TokenLog log = new TokenLog();
