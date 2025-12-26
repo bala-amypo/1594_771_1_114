@@ -13,17 +13,11 @@ public class JwtTokenProvider {
     private final String secretKey;
     private final long validityInMs;
 
-    // Used by Spring
+    // ✅ SINGLE constructor (used by Spring AND tests)
     public JwtTokenProvider(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.validity}") long validity) {
+            @Value("${jwt.secret:ChangeThisSecretKeyReplaceMe1234567890}") String secret,
+            @Value("${jwt.validity:3600000}") long validity) {
 
-        this.secretKey = Base64.getEncoder().encodeToString(secret.getBytes());
-        this.validityInMs = validity;
-    }
-
-    // USED BY TEST CASES (VERY IMPORTANT)
-    public JwtTokenProvider(String secret, long validity) {
         this.secretKey = Base64.getEncoder().encodeToString(secret.getBytes());
         this.validityInMs = validity;
     }
