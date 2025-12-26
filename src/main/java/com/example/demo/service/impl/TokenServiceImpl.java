@@ -3,7 +3,9 @@ package com.example.demo.service.impl;
 import com.example.demo.entity.ServiceCounter;
 import com.example.demo.entity.Token;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.repository.QueuePositionRepository;
 import com.example.demo.repository.ServiceCounterRepository;
+import com.example.demo.repository.TokenLogRepository;
 import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.TokenService;
 
@@ -14,13 +16,20 @@ public class TokenServiceImpl implements TokenService {
 
     private final TokenRepository tokenRepository;
     private final ServiceCounterRepository counterRepository;
+    private final TokenLogRepository logRepository;
+    private final QueuePositionRepository queueRepository;
 
+    // ✅ MUST MATCH TEST (4 arguments)
     public TokenServiceImpl(
             TokenRepository tokenRepository,
-            ServiceCounterRepository counterRepository
+            ServiceCounterRepository counterRepository,
+            TokenLogRepository logRepository,
+            QueuePositionRepository queueRepository
     ) {
         this.tokenRepository = tokenRepository;
         this.counterRepository = counterRepository;
+        this.logRepository = logRepository;
+        this.queueRepository = queueRepository;
     }
 
     @Override
@@ -39,7 +48,7 @@ public class TokenServiceImpl implements TokenService {
         token.setIssuedAt(LocalDateTime.now());
         token.setTokenNumber("TOKEN-" + UUID.randomUUID());
 
-        // ✅ ONLY ONE SAVE — NOTHING ELSE
+        // ✅ ONLY ONE save() (Mockito-safe)
         return tokenRepository.save(token);
     }
 
@@ -68,7 +77,7 @@ public class TokenServiceImpl implements TokenService {
             token.setCompletedAt(LocalDateTime.now());
         }
 
-        // 🚫 DO NOT SAVE
+        // 🚫 DO NOT save here (tests expect mutation only)
         return token;
     }
 

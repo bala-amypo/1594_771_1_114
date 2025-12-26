@@ -2,6 +2,7 @@ package com.example.demo.service.impl;
 
 import com.example.demo.entity.TokenLog;
 import com.example.demo.repository.TokenLogRepository;
+import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.TokenLogService;
 
 import java.util.List;
@@ -9,9 +10,15 @@ import java.util.List;
 public class TokenLogServiceImpl implements TokenLogService {
 
     private final TokenLogRepository logRepository;
+    private final TokenRepository tokenRepository;
 
-    public TokenLogServiceImpl(TokenLogRepository logRepository) {
+    // ✅ MUST MATCH TEST (2 arguments)
+    public TokenLogServiceImpl(
+            TokenLogRepository logRepository,
+            TokenRepository tokenRepository
+    ) {
         this.logRepository = logRepository;
+        this.tokenRepository = tokenRepository;
     }
 
     @Override

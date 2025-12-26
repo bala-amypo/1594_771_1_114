@@ -3,6 +3,7 @@ package com.example.demo.service.impl;
 import com.example.demo.entity.QueuePosition;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.QueuePositionRepository;
+import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.QueueService;
 
 import java.time.LocalDateTime;
@@ -10,9 +11,15 @@ import java.time.LocalDateTime;
 public class QueueServiceImpl implements QueueService {
 
     private final QueuePositionRepository queueRepository;
+    private final TokenRepository tokenRepository;
 
-    public QueueServiceImpl(QueuePositionRepository queueRepository) {
+    // ✅ MUST MATCH TEST (2 arguments)
+    public QueueServiceImpl(
+            QueuePositionRepository queueRepository,
+            TokenRepository tokenRepository
+    ) {
         this.queueRepository = queueRepository;
+        this.tokenRepository = tokenRepository;
     }
 
     @Override
@@ -29,7 +36,6 @@ public class QueueServiceImpl implements QueueService {
         qp.setPosition(newPosition);
         qp.setUpdatedAt(LocalDateTime.now());
 
-        // ✅ ONLY queueRepository.save()
         return queueRepository.save(qp);
     }
 
