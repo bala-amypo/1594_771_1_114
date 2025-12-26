@@ -1,36 +1,36 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
 public class TokenLog {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "token_id")
     private Token token;
 
     private String logMessage;
+    private LocalDateTime loggedAt = LocalDateTime.now();
 
-    private LocalDateTime loggedAt;
+    public TokenLog() {}
 
-    /**
-     * @PrePersist satisfies test t30: tokenLogTimestampAuto
-     */
-    @PrePersist
-    protected void onCreate() {
-        if (this.loggedAt == null) {
-            this.loggedAt = LocalDateTime.now();
-        }
+    public TokenLog(Token token, String message) {
+        this.token = token;
+        this.logMessage = message;
     }
-    
-    // Default constructor initialized with time to pass non-persisted unit tests
-    public TokenLog() {
-        this.loggedAt = LocalDateTime.now();
-    }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Token getToken() { return token; }
+    public void setToken(Token token) { this.token = token; }
+
+    public String getLogMessage() { return logMessage; }
+    public void setLogMessage(String logMessage) { this.logMessage = logMessage; }
+
+    public LocalDateTime getLoggedAt() { return loggedAt; }
 }
