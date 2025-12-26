@@ -16,12 +16,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User register(User user) {
+    public User register(User input) {
 
-        // 🔑 NEVER allow null
-        if (user == null) {
-            user = new User();
-        }
+        User user = (input == null) ? new User() : input;
 
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
@@ -33,7 +30,7 @@ public class UserServiceImpl implements UserService {
             user.setRole("STAFF");
         }
 
-        // 🔑 SAME INSTANCE
+        // ✅ EXACTLY ONE SAVE
         return userRepository.save(user);
     }
 

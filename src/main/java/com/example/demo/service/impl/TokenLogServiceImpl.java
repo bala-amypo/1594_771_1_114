@@ -32,6 +32,7 @@ public class TokenLogServiceImpl implements TokenLogService {
         log.setToken(token);
         log.setLogMessage(message);
 
+        // ✅ ONE SAVE
         return logRepository.save(log);
     }
 

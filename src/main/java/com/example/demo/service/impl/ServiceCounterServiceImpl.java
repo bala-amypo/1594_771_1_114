@@ -15,13 +15,12 @@ public class ServiceCounterServiceImpl implements ServiceCounterService {
     }
 
     @Override
-    public ServiceCounter addCounter(ServiceCounter counter) {
+    public ServiceCounter addCounter(ServiceCounter input) {
 
-        // 🔑 NEVER null
-        if (counter == null) {
-            counter = new ServiceCounter();
-        }
+        ServiceCounter counter =
+                (input == null) ? new ServiceCounter() : input;
 
+        // ✅ EXACTLY ONE SAVE
         return counterRepository.save(counter);
     }
 
