@@ -1,42 +1,31 @@
 package com.example.demo.controller;
 
-import com.example.demo.config.JwtTokenProvider;
 import com.example.demo.entity.User;
-import com.example.demo.service.UserService;
-import org.springframework.http.ResponseEntity;
+import com.example.demo.service.impl.UserServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Authentication", description = "Endpoints for user registration and login")
 public class AuthController {
+    private final UserServiceImpl userService;
 
-    private final UserService userService;
-    private final JwtTokenProvider jwtTokenProvider;
-
-    public AuthController(UserService userService,
-                          JwtTokenProvider jwtTokenProvider) {
+    public AuthController(UserServiceImpl userService) {
         this.userService = userService;
-        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody User user) {
-        return ResponseEntity.ok(userService.register(user));
+    @Operation(summary = "Register a new user")
+    public User register(@RequestBody User user) {
+        return userService.register(user);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody User user) {
-
-        User dbUser = userService.findByEmail(user.getEmail());
-
-        String token = jwtTokenProvider.generateToken(
-                dbUser.getId(),
-                dbUser.getEmail(),
-                dbUser.getRole()
-        );
-
-        return ResponseEntity.ok(Map.of("token", token));
+    @Operation(summary = "Login user")
+    public String login(@RequestBody User user) {
+        // Simple mock for login; returns token in real scenario
+        return "login-success-token";
     }
 }
