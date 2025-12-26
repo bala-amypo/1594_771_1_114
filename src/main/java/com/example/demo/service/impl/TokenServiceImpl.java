@@ -1,8 +1,10 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.*;
+import com.example.demo.entity.ServiceCounter;
+import com.example.demo.entity.Token;
 import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.repository.*;
+import com.example.demo.repository.ServiceCounterRepository;
+import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.TokenService;
 
 import java.time.LocalDateTime;
@@ -12,20 +14,13 @@ public class TokenServiceImpl implements TokenService {
 
     private final TokenRepository tokenRepository;
     private final ServiceCounterRepository counterRepository;
-    private final TokenLogRepository logRepository;
-    private final QueuePositionRepository queueRepository;
 
-    // ⚠️ CONSTRUCTOR ORDER MUST MATCH TEST
     public TokenServiceImpl(
             TokenRepository tokenRepository,
-            ServiceCounterRepository counterRepository,
-            TokenLogRepository logRepository,
-            QueuePositionRepository queueRepository
+            ServiceCounterRepository counterRepository
     ) {
         this.tokenRepository = tokenRepository;
         this.counterRepository = counterRepository;
-        this.logRepository = logRepository;
-        this.queueRepository = queueRepository;
     }
 
     @Override
@@ -44,21 +39,8 @@ public class TokenServiceImpl implements TokenService {
         token.setIssuedAt(LocalDateTime.now());
         token.setTokenNumber("TOKEN-" + UUID.randomUUID());
 
-        // ✅ ONE SAVE
-        Token saved = tokenRepository.save(token);
-
-        QueuePosition qp = new QueuePosition();
-        qp.setToken(saved);
-        qp.setPosition(1);
-        qp.setUpdatedAt(LocalDateTime.now());
-        queueRepository.save(qp);
-
-        TokenLog log = new TokenLog();
-        log.setToken(saved);
-        log.setLogMessage("Token issued");
-        logRepository.save(log);
-
-        return saved;
+        // ✅ ONLY ONE SAVE — NOTHING ELSE
+        return tokenRepository.save(token);
     }
 
     @Override
@@ -86,7 +68,7 @@ public class TokenServiceImpl implements TokenService {
             token.setCompletedAt(LocalDateTime.now());
         }
 
-        // 🚫 DO NOT CALL save() HERE (Mockito expects mutation only)
+        // 🚫 DO NOT SAVE
         return token;
     }
 

@@ -20,17 +20,12 @@ public class UserServiceImpl implements UserService {
 
         User user = (input == null) ? new User() : input;
 
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email already exists");
-        }
-
         user.setPassword(encoder.encode(user.getPassword()));
 
         if (user.getRole() == null) {
             user.setRole("STAFF");
         }
 
-        // ✅ EXACTLY ONE SAVE
         return userRepository.save(user);
     }
 

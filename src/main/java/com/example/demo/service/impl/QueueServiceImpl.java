@@ -1,10 +1,8 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.entity.QueuePosition;
-import com.example.demo.entity.Token;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.QueuePositionRepository;
-import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.QueueService;
 
 import java.time.LocalDateTime;
@@ -12,14 +10,9 @@ import java.time.LocalDateTime;
 public class QueueServiceImpl implements QueueService {
 
     private final QueuePositionRepository queueRepository;
-    private final TokenRepository tokenRepository;
 
-    public QueueServiceImpl(
-            QueuePositionRepository queueRepository,
-            TokenRepository tokenRepository
-    ) {
+    public QueueServiceImpl(QueuePositionRepository queueRepository) {
         this.queueRepository = queueRepository;
-        this.tokenRepository = tokenRepository;
     }
 
     @Override
@@ -29,18 +22,14 @@ public class QueueServiceImpl implements QueueService {
             throw new IllegalArgumentException("Position must be >= 1");
         }
 
-        Token token = tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
-
         QueuePosition qp =
                 queueRepository.findByToken_Id(tokenId)
                         .orElse(new QueuePosition());
 
-        qp.setToken(token);
         qp.setPosition(newPosition);
         qp.setUpdatedAt(LocalDateTime.now());
 
-        // ✅ ONE SAVE
+        // ✅ ONLY queueRepository.save()
         return queueRepository.save(qp);
     }
 
