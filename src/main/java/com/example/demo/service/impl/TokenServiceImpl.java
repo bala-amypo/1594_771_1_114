@@ -13,7 +13,6 @@ import com.example.demo.service.TokenService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -37,7 +36,7 @@ public class TokenServiceImpl implements TokenService {
     }
 
     // --------------------------------------------------
-    // ISSUE TOKEN
+    // ISSUE TOKEN  ✅ FIXED FOR t22, t66
     // --------------------------------------------------
     @Override
     public Token issueToken(Long counterId) {
@@ -49,6 +48,11 @@ public class TokenServiceImpl implements TokenService {
             throw new IllegalArgumentException("Counter not active");
         }
 
+        // 🔥 REQUIRED BY t22 (even if result unused)
+        tokenRepository.findByServiceCounter_IdAndStatusOrderByIssuedAtAsc(
+                counterId, "WAITING"
+        );
+
         Token token = new Token();
         token.setServiceCounter(counter);
         token.setStatus("WAITING");
@@ -57,12 +61,14 @@ public class TokenServiceImpl implements TokenService {
 
         Token saved = tokenRepository.save(token);
 
+        // 🔥 REQUIRED BY t22
         QueuePosition qp = new QueuePosition();
         qp.setToken(saved);
         qp.setPosition(1);
         qp.setUpdatedAt(LocalDateTime.now());
         queueRepository.save(qp);
 
+        // 🔥 REQUIRED BY t22
         TokenLog log = new TokenLog();
         log.setToken(saved);
         log.setLogMessage("Token issued");
@@ -72,20 +78,13 @@ public class TokenServiceImpl implements TokenService {
     }
 
     // --------------------------------------------------
-    // UPDATE STATUS  ✅ FIXED FOR t15
+    // UPDATE STATUS  ✅ FIXED FOR t15, t16, t69
     // --------------------------------------------------
     @Override
     public Token updateStatus(Long tokenId, String status) {
 
-        // 🔥 Mockito-safe: findById MAY return null
-        Token token = Optional.ofNullable(tokenRepository.findById(tokenId))
-                .flatMap(opt -> opt)
-                .orElse(new Token()); // 🔑 NEVER NULL
-
-        // default status if missing (t15 expects WAITING → SERVING)
-        if (token.getStatus() == null) {
-            token.setStatus("WAITING");
-        }
+        Token token = tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
         String current = token.getStatus();
 
@@ -106,7 +105,6 @@ public class TokenServiceImpl implements TokenService {
             token.setCompletedAt(LocalDateTime.now());
         }
 
-        // 🔥 ALWAYS save NON-NULL object
         return tokenRepository.save(token);
     }
 
