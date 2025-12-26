@@ -20,17 +20,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public User register(User input) {
 
-        User user = new User(); // 🔥 ALWAYS new object
+        User user = new User(); // 🔥 ALWAYS NEW
 
         if (input != null) {
             user.setName(input.getName());
             user.setEmail(input.getEmail());
             user.setRole(input.getRole());
-        }
-
-        if (user.getEmail() != null &&
-                userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email already exists");
         }
 
         user.setPassword(
@@ -47,12 +42,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found"));
     }
 
     @Override
     public User findById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found"));
     }
 }

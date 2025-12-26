@@ -31,11 +31,9 @@ public class QueueServiceImpl implements QueueService {
             throw new IllegalArgumentException("Position must be >= 1");
         }
 
-        Token token = tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
+        QueuePosition qp = queueRepository.findByToken_Id(tokenId)
+                .orElse(new QueuePosition()); // 🔥 NEVER NULL
 
-        QueuePosition qp = new QueuePosition(); // 🔥 new object
-        qp.setToken(token);
         qp.setPosition(newPosition);
         qp.setUpdatedAt(LocalDateTime.now());
 
@@ -45,6 +43,7 @@ public class QueueServiceImpl implements QueueService {
     @Override
     public QueuePosition getPosition(Long tokenId) {
         return queueRepository.findByToken_Id(tokenId)
-                .orElseThrow(() -> new ResourceNotFoundException("Queue position not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Queue position not found"));
     }
 }

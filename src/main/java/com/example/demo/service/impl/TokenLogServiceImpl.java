@@ -27,11 +27,7 @@ public class TokenLogServiceImpl implements TokenLogService {
     @Override
     public TokenLog addLog(Long tokenId, String message) {
 
-        Token token = tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
-
-        TokenLog log = new TokenLog(); // 🔥 new object
-        log.setToken(token);
+        TokenLog log = new TokenLog(); // 🔥 ALWAYS NEW
         log.setLogMessage(message);
 
         return logRepository.save(log);

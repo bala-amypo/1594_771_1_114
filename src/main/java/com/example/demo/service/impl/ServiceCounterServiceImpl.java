@@ -19,15 +19,15 @@ public class ServiceCounterServiceImpl implements ServiceCounterService {
     @Override
     public ServiceCounter addCounter(ServiceCounter input) {
 
-        ServiceCounter counter = new ServiceCounter(); // 🔥 new object
+        ServiceCounter counter = new ServiceCounter(); // 🔥 ALWAYS NEW
 
         if (input != null) {
             counter.setCounterName(input.getCounterName());
             counter.setDepartment(input.getDepartment());
-            counter.setIsActive(input.getIsActive());
-        }
-
-        if (counter.getIsActive() == null) {
+            counter.setIsActive(
+                    input.getIsActive() != null ? input.getIsActive() : true
+            );
+        } else {
             counter.setIsActive(true);
         }
 
