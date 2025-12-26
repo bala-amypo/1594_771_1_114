@@ -14,11 +14,13 @@ public class TokenLog {
     @JoinColumn(name = "token_id")
     private Token token;
 
-    private String message;
+    private String logMessage;
 
-    private LocalDateTime loggedAt = LocalDateTime.now();
+    private LocalDateTime loggedAt;
 
-    // -------- getters & setters --------
+    public TokenLog() {
+        this.loggedAt = LocalDateTime.now();
+    }
 
     public Long getId() {
         return id;
@@ -36,17 +38,15 @@ public class TokenLog {
         this.token = token;
     }
 
+    public String getLogMessage() {
+        return logMessage;
+    }
+
+    public void setLogMessage(String logMessage) {
+        this.logMessage = logMessage;
+    }
+
     public LocalDateTime getLoggedAt() {
         return loggedAt;
-    }
-
-    // ✅ REQUIRED BY SERVICE
-    public String getMessage() {
-        return message;
-    }
-
-    // ✅ REQUIRED BY SERVICE
-    public void setMessage(String message) {
-        this.message = message;
     }
 }
