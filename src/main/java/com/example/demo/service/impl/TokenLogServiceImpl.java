@@ -14,7 +14,6 @@ public class TokenLogServiceImpl implements TokenLogService {
     private final TokenLogRepository logRepository;
     private final TokenRepository tokenRepository;
 
-    // ✅ MUST MATCH TEST (2 arguments)
     public TokenLogServiceImpl(
             TokenLogRepository logRepository,
             TokenRepository tokenRepository
@@ -26,12 +25,11 @@ public class TokenLogServiceImpl implements TokenLogService {
     @Override
     public TokenLog addLog(Long tokenId, String message) {
 
-        // 🔑 REQUIRED: token must be fetched & set
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
-        TokenLog log = new TokenLog();
-        log.setToken(token);          // 🔥 THIS LINE FIXES MOCKITO
+        TokenLog log = new TokenLog(); // 🔥 new object
+        log.setToken(token);
         log.setLogMessage(message);
 
         return logRepository.save(log);

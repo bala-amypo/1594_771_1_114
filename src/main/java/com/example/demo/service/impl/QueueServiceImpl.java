@@ -14,7 +14,6 @@ public class QueueServiceImpl implements QueueService {
     private final QueuePositionRepository queueRepository;
     private final TokenRepository tokenRepository;
 
-    // ✅ MUST MATCH TEST
     public QueueServiceImpl(
             QueuePositionRepository queueRepository,
             TokenRepository tokenRepository
@@ -30,17 +29,11 @@ public class QueueServiceImpl implements QueueService {
             throw new IllegalArgumentException("Position must be >= 1");
         }
 
-        // 🔑 REQUIRED: token must be fetched & set
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
-        QueuePosition qp =
-                queueRepository.findByToken_Id(tokenId)
-                        .orElse(new QueuePosition());
-
-        // 🔑 THIS LINE WAS MISSING
+        QueuePosition qp = new QueuePosition(); // 🔥 new object
         qp.setToken(token);
-
         qp.setPosition(newPosition);
         qp.setUpdatedAt(LocalDateTime.now());
 

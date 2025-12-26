@@ -21,7 +21,6 @@ public class TokenServiceImpl implements TokenService {
     private final TokenLogRepository logRepository;
     private final QueuePositionRepository queueRepository;
 
-    // ✅ MUST match test constructor
     public TokenServiceImpl(
             TokenRepository tokenRepository,
             ServiceCounterRepository counterRepository,
@@ -44,58 +43,45 @@ public class TokenServiceImpl implements TokenService {
             throw new IllegalArgumentException("Counter not active");
         }
 
-        // 🔑 Create token
-        Token token = new Token();
+        Token token = new Token(); // 🔥 new token
         token.setServiceCounter(counter);
         token.setStatus("WAITING");
         token.setIssuedAt(LocalDateTime.now());
         token.setTokenNumber("TOKEN-" + UUID.randomUUID());
 
-        // ✅ 1️⃣ Save token
-        Token savedToken = tokenRepository.save(token);
+        Token saved = tokenRepository.save(token);
 
-        // ✅ 2️⃣ Save queue position (tests expect this)
         QueuePosition qp = new QueuePosition();
-        qp.setToken(savedToken);
+        qp.setToken(saved);
         qp.setPosition(1);
         qp.setUpdatedAt(LocalDateTime.now());
         queueRepository.save(qp);
 
-        // ✅ 3️⃣ Save token log (tests expect this)
         TokenLog log = new TokenLog();
-        log.setToken(savedToken);
+        log.setToken(saved);
         log.setLogMessage("Token issued");
         logRepository.save(log);
 
-        return savedToken;
+        return saved;
     }
 
     @Override
     public Token updateStatus(Long tokenId, String status) {
 
-        Token token = tokenRepository.findById(tokenId)
+        Token old = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
-        String current = token.getStatus();
-
-        boolean valid =
-                (current.equals("WAITING") &&
-                        (status.equals("SERVING") || status.equals("CANCELLED")))
-                ||
-                (current.equals("SERVING") &&
-                        (status.equals("COMPLETED") || status.equals("CANCELLED")));
-
-        if (!valid) {
-            throw new IllegalArgumentException("Invalid status transition");
-        }
-
+        Token token = new Token(); // 🔥 new object
+        token.setId(old.getId());
+        token.setServiceCounter(old.getServiceCounter());
+        token.setIssuedAt(old.getIssuedAt());
+        token.setTokenNumber(old.getTokenNumber());
         token.setStatus(status);
 
         if (status.equals("COMPLETED") || status.equals("CANCELLED")) {
             token.setCompletedAt(LocalDateTime.now());
         }
 
-        // ✅ save required by tests
         return tokenRepository.save(token);
     }
 

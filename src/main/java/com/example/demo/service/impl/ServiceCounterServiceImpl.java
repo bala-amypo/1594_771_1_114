@@ -17,15 +17,18 @@ public class ServiceCounterServiceImpl implements ServiceCounterService {
     @Override
     public ServiceCounter addCounter(ServiceCounter input) {
 
-        // 🔑 Mockito-safe: never save null
-        ServiceCounter counter = (input == null) ? new ServiceCounter() : input;
+        ServiceCounter counter = new ServiceCounter(); // 🔥 new object
 
-        // 🔑 Ensure default active (test expects this)
+        if (input != null) {
+            counter.setCounterName(input.getCounterName());
+            counter.setDepartment(input.getDepartment());
+            counter.setIsActive(input.getIsActive());
+        }
+
         if (counter.getIsActive() == null) {
             counter.setIsActive(true);
         }
 
-        // ✅ EXACT object saved
         return counterRepository.save(counter);
     }
 

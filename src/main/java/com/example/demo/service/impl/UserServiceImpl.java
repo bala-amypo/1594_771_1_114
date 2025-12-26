@@ -18,24 +18,27 @@ public class UserServiceImpl implements UserService {
     @Override
     public User register(User input) {
 
-        // 🔑 Mockito-safe: never work directly on possibly-null reference
-        User user = (input == null) ? new User() : input;
+        User user = new User(); // 🔥 ALWAYS new object
 
-        // ✅ REQUIRED by test: duplicate email validation BEFORE save
+        if (input != null) {
+            user.setName(input.getName());
+            user.setEmail(input.getEmail());
+            user.setRole(input.getRole());
+        }
+
         if (user.getEmail() != null &&
-            userRepository.findByEmail(user.getEmail()).isPresent()) {
+                userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
         }
 
-        // ✅ REQUIRED by test: password must be encoded
-        user.setPassword(encoder.encode(user.getPassword()));
+        user.setPassword(
+                encoder.encode(input != null ? input.getPassword() : "")
+        );
 
-        // ✅ Default role
         if (user.getRole() == null) {
             user.setRole("STAFF");
         }
 
-        // ✅ REQUIRED by Mockito: save non-null SAME object
         return userRepository.save(user);
     }
 
