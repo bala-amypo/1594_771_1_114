@@ -1,40 +1,31 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.QueuePosition;
-import com.example.demo.entity.Token;
-import com.example.demo.repository.QueuePositionRepository;
-import com.example.demo.repository.TokenRepository;
-import org.springframework.stereotype.Service;
+import com.example.demo.entity.*;
+import com.example.demo.repository.*;
 
-@Service
 public class QueueServiceImpl {
-    private final QueuePositionRepository queueRepo;
-    private final TokenRepository tokenRepository;
 
-    // Exact constructor signature required for test suite instantiation
-    public QueueServiceImpl(QueuePositionRepository queueRepo, TokenRepository tokenRepository) {
-        this.queueRepo = queueRepo;
-        this.tokenRepository = tokenRepository;
+    private final QueuePositionRepository queueRepo;
+    private final TokenRepository tokenRepo;
+
+    public QueueServiceImpl(QueuePositionRepository q, TokenRepository t) {
+        queueRepo = q; tokenRepo = t;
     }
 
-    public QueuePosition updateQueuePosition(Long tokenId, Integer newPosition) {
-        // Requirement and Test t68: Position must be >= 1
-        if (newPosition == null || newPosition < 1) {
-            throw new IllegalArgumentException("Position must be >= 1");
-        }
+    public QueuePosition updateQueuePosition(Long tokenId, Integer pos) {
+        if (pos < 1) throw new IllegalArgumentException(">= 1");
 
-        Token token = tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new RuntimeException("Token not found")); // Keyword: not found
+        Token token = tokenRepo.findById(tokenId)
+                .orElseThrow(() -> new RuntimeException("not found"));
 
-        QueuePosition qp = queueRepo.findByToken_Id(tokenId).orElse(new QueuePosition());
+        QueuePosition qp = new QueuePosition();
         qp.setToken(token);
-        qp.setPosition(newPosition);
-        
+        qp.setPosition(pos);
         return queueRepo.save(qp);
     }
 
     public QueuePosition getPosition(Long tokenId) {
         return queueRepo.findByToken_Id(tokenId)
-                .orElseThrow(() -> new RuntimeException("Queue position not found")); // Keyword: not found
+                .orElseThrow(() -> new RuntimeException("not found"));
     }
 }
