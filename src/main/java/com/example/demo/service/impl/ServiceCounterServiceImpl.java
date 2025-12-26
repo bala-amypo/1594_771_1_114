@@ -16,7 +16,12 @@ public class ServiceCounterServiceImpl implements ServiceCounterService {
 
     @Override
     public ServiceCounter addCounter(ServiceCounter counter) {
-        // ✅ DO NOT create new object
+
+        // 🔑 NEVER null
+        if (counter == null) {
+            counter = new ServiceCounter();
+        }
+
         return counterRepository.save(counter);
     }
 

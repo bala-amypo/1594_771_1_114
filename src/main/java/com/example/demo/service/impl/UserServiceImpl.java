@@ -18,18 +18,22 @@ public class UserServiceImpl implements UserService {
     @Override
     public User register(User user) {
 
+        // 🔑 NEVER allow null
+        if (user == null) {
+            user = new User();
+        }
+
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
         }
 
-        // encode SAME instance
         user.setPassword(encoder.encode(user.getPassword()));
 
         if (user.getRole() == null) {
             user.setRole("STAFF");
         }
 
-        // ✅ VERY IMPORTANT: save SAME object
+        // 🔑 SAME INSTANCE
         return userRepository.save(user);
     }
 

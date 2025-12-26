@@ -1,14 +1,8 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.QueuePosition;
-import com.example.demo.entity.ServiceCounter;
-import com.example.demo.entity.Token;
-import com.example.demo.entity.TokenLog;
+import com.example.demo.entity.*;
 import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.repository.QueuePositionRepository;
-import com.example.demo.repository.ServiceCounterRepository;
-import com.example.demo.repository.TokenLogRepository;
-import com.example.demo.repository.TokenRepository;
+import com.example.demo.repository.*;
 import com.example.demo.service.TokenService;
 
 import java.time.LocalDateTime;
@@ -45,13 +39,13 @@ public class TokenServiceImpl implements TokenService {
             throw new IllegalArgumentException("Counter not active");
         }
 
+        // 🔑 NEVER null
         Token token = new Token();
         token.setServiceCounter(counter);
         token.setStatus("WAITING");
         token.setIssuedAt(LocalDateTime.now());
         token.setTokenNumber("TOKEN-" + UUID.randomUUID());
 
-        // ✅ SAME INSTANCE saved
         Token saved = tokenRepository.save(token);
 
         List<Token> waiting =
@@ -97,7 +91,6 @@ public class TokenServiceImpl implements TokenService {
             token.setCompletedAt(LocalDateTime.now());
         }
 
-        // ✅ SAME token instance
         Token saved = tokenRepository.save(token);
 
         TokenLog log = new TokenLog();
