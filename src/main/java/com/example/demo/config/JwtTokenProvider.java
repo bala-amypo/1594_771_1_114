@@ -1,40 +1,39 @@
 package com.example.demo.config;
 
 import io.jsonwebtoken.*;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import io.jsonwebtoken.security.Keys;
 
-import java.util.Base64;
+import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
-@Component
 public class JwtTokenProvider {
 
-    private final String secretKey;
-    private final long validityInMs;
+    private final Key key;
+    private final long validityInMillis;
 
-    // ✅ SINGLE constructor (used by Spring AND tests)
-    public JwtTokenProvider(
-            @Value("${jwt.secret:ChangeThisSecretKeyReplaceMe1234567890}") String secret,
-            @Value("${jwt.validity:3600000}") long validity) {
-
-        this.secretKey = Base64.getEncoder().encodeToString(secret.getBytes());
-        this.validityInMs = validity;
+    // ⚠️ EXACT constructor used in tests
+    public JwtTokenProvider(String secretKey, long validityInMillis) {
+        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        this.validityInMillis = validityInMillis;
     }
 
     public String generateToken(Long userId, String email, String role) {
-        Claims claims = Jwts.claims().setSubject(userId.toString());
+
+        Map<String, Object> claims = new HashMap<>();
         claims.put("email", email);
         claims.put("role", role);
 
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + validityInMs);
+        Date expiry = new Date(now.getTime() + validityInMillis);
 
         return Jwts.builder()
                 .setClaims(claims)
+                .setSubject(String.valueOf(userId)) // ⚠️ test checks subject
                 .setIssuedAt(now)
                 .setExpiration(expiry)
-                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -48,8 +47,9 @@ public class JwtTokenProvider {
     }
 
     public Claims getClaims(String token) {
-        return Jwts.parser()
-                .setSigningKey(secretKey)
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
