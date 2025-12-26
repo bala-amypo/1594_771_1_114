@@ -7,30 +7,46 @@ import java.time.LocalDateTime;
 public class TokenLog {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "token_id")
     private Token token;
 
-    private String logMessage;
+    private String message;
+
     private LocalDateTime loggedAt = LocalDateTime.now();
 
-    public TokenLog() {}
+    // -------- getters & setters --------
 
-    public TokenLog(Token token, String message) {
-        this.token = token;
-        this.logMessage = message;
+    public Long getId() {
+        return id;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Token getToken() { return token; }
-    public void setToken(Token token) { this.token = token; }
+    public Token getToken() {
+        return token;
+    }
 
-    public String getLogMessage() { return logMessage; }
-    public void setLogMessage(String logMessage) { this.logMessage = logMessage; }
+    public void setToken(Token token) {
+        this.token = token;
+    }
 
-    public LocalDateTime getLoggedAt() { return loggedAt; }
+    public LocalDateTime getLoggedAt() {
+        return loggedAt;
+    }
+
+    // ✅ REQUIRED BY SERVICE
+    public String getMessage() {
+        return message;
+    }
+
+    // ✅ REQUIRED BY SERVICE
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }
