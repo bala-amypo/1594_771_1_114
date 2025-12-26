@@ -1,6 +1,7 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.entity.QueuePosition;
+import com.example.demo.entity.Token;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.QueuePositionRepository;
 import com.example.demo.repository.TokenRepository;
@@ -13,7 +14,7 @@ public class QueueServiceImpl implements QueueService {
     private final QueuePositionRepository queueRepository;
     private final TokenRepository tokenRepository;
 
-    // ✅ MUST MATCH TEST (2 arguments)
+    // ✅ MUST MATCH TEST
     public QueueServiceImpl(
             QueuePositionRepository queueRepository,
             TokenRepository tokenRepository
@@ -29,9 +30,16 @@ public class QueueServiceImpl implements QueueService {
             throw new IllegalArgumentException("Position must be >= 1");
         }
 
+        // 🔑 REQUIRED: token must be fetched & set
+        Token token = tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
+
         QueuePosition qp =
                 queueRepository.findByToken_Id(tokenId)
                         .orElse(new QueuePosition());
+
+        // 🔑 THIS LINE WAS MISSING
+        qp.setToken(token);
 
         qp.setPosition(newPosition);
         qp.setUpdatedAt(LocalDateTime.now());
