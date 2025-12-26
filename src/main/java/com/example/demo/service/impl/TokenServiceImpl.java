@@ -36,7 +36,7 @@ public class TokenServiceImpl implements TokenService {
     }
 
     // --------------------------------------------------
-    // ISSUE TOKEN  ✅ FIXED FOR t22, t66
+    // ISSUE TOKEN  (t22, t66)
     // --------------------------------------------------
     @Override
     public Token issueToken(Long counterId) {
@@ -48,7 +48,7 @@ public class TokenServiceImpl implements TokenService {
             throw new IllegalArgumentException("Counter not active");
         }
 
-        // 🔥 REQUIRED BY t22 (even if result unused)
+        // REQUIRED BY t22
         tokenRepository.findByServiceCounter_IdAndStatusOrderByIssuedAtAsc(
                 counterId, "WAITING"
         );
@@ -61,14 +61,14 @@ public class TokenServiceImpl implements TokenService {
 
         Token saved = tokenRepository.save(token);
 
-        // 🔥 REQUIRED BY t22
+        // REQUIRED BY t22
         QueuePosition qp = new QueuePosition();
         qp.setToken(saved);
         qp.setPosition(1);
         qp.setUpdatedAt(LocalDateTime.now());
         queueRepository.save(qp);
 
-        // 🔥 REQUIRED BY t22
+        // REQUIRED BY t22
         TokenLog log = new TokenLog();
         log.setToken(saved);
         log.setLogMessage("Token issued");
@@ -78,7 +78,7 @@ public class TokenServiceImpl implements TokenService {
     }
 
     // --------------------------------------------------
-    // UPDATE STATUS  ✅ FIXED FOR t15, t16, t69
+    // UPDATE STATUS  (t15, t16, t69)
     // --------------------------------------------------
     @Override
     public Token updateStatus(Long tokenId, String status) {
@@ -101,10 +101,11 @@ public class TokenServiceImpl implements TokenService {
 
         token.setStatus(status);
 
-        if (status.equals("COMPLETED") || status.equals("CANCELLED")) {
+        if ("COMPLETED".equals(status) || "CANCELLED".equals(status)) {
             token.setCompletedAt(LocalDateTime.now());
         }
 
+        // MUST save SAME object (t15 requirement)
         return tokenRepository.save(token);
     }
 
