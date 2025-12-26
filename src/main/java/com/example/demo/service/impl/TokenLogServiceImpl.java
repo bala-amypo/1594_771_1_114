@@ -8,7 +8,7 @@ import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.TokenLogService;
 
 import java.util.List;
-@service
+@Service
 public class TokenLogServiceImpl implements TokenLogService {
 
     private final TokenLogRepository logRepository;

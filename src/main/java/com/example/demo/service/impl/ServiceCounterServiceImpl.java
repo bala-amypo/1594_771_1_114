@@ -5,7 +5,7 @@ import com.example.demo.repository.ServiceCounterRepository;
 import com.example.demo.service.ServiceCounterService;
 
 import java.util.List;
-@service
+@Service
 public class ServiceCounterServiceImpl implements ServiceCounterService {
 
     private final ServiceCounterRepository counterRepository;
