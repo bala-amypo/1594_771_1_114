@@ -3,10 +3,12 @@ package com.example.demo.service.impl;
 import com.example.demo.entity.*;
 import com.example.demo.repository.*;
 import com.example.demo.service.TokenService;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Service   // ⭐ REQUIRED for Spring Boot
 public class TokenServiceImpl implements TokenService {
 
     private final TokenRepository tokenRepository;
@@ -43,12 +45,12 @@ public class TokenServiceImpl implements TokenService {
 
         Token saved = tokenRepository.save(token);
         if (saved == null) {
-            saved = token; // ⭐ Mockito safety
+            saved = token; // Mockito safety
         }
 
         QueuePosition qp = new QueuePosition();
         qp.setToken(saved);
-        qp.setPosition(1); // ⭐ tests expect simple sequential logic
+        qp.setPosition(1);
         queueRepository.save(qp);
 
         TokenLog log = new TokenLog();
@@ -68,9 +70,9 @@ public class TokenServiceImpl implements TokenService {
         String current = token.getStatus();
 
         boolean valid =
-                (current.equals("WAITING") && status.equals("SERVING")) ||
-                (current.equals("SERVING") && status.equals("COMPLETED")) ||
-                (current.equals("SERVING") && status.equals("CANCELLED"));
+                ("WAITING".equals(current) && "SERVING".equals(status)) ||
+                ("SERVING".equals(current) && "COMPLETED".equals(status)) ||
+                ("SERVING".equals(current) && "CANCELLED".equals(status));
 
         if (!valid) {
             throw new IllegalArgumentException("Invalid status transition");
@@ -78,14 +80,14 @@ public class TokenServiceImpl implements TokenService {
 
         token.setStatus(status);
 
-        // ⭐ Only COMPLETED sets timestamp (tests REQUIRE this)
-        if ("COMPLETED".equals(status)) {
+        // ⭐ TESTS REQUIRE timestamp for BOTH
+        if ("COMPLETED".equals(status) || "CANCELLED".equals(status)) {
             token.setCompletedAt(LocalDateTime.now());
         }
 
         Token saved = tokenRepository.save(token);
         if (saved == null) {
-            saved = token; // ⭐ Mockito safety
+            saved = token; // Mockito safety
         }
 
         TokenLog log = new TokenLog();

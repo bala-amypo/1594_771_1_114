@@ -3,9 +3,11 @@ package com.example.demo.service.impl;
 import com.example.demo.entity.ServiceCounter;
 import com.example.demo.repository.ServiceCounterRepository;
 import com.example.demo.service.ServiceCounterService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service   // ⭐ REQUIRED
 public class ServiceCounterServiceImpl implements ServiceCounterService {
 
     private final ServiceCounterRepository counterRepository;
@@ -20,7 +22,7 @@ public class ServiceCounterServiceImpl implements ServiceCounterService {
 
         ServiceCounter saved = counterRepository.save(counter);
         if (saved == null) {
-            saved = counter; // ⭐ Mockito safety
+            saved = counter; // Mockito safety
         }
 
         return saved;

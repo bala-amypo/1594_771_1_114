@@ -4,7 +4,9 @@ import com.example.demo.entity.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
+@Service   // ⭐ THIS LINE FIXES EVERYTHING
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -22,7 +24,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Email already exists");
         }
 
-        // ⭐ MUST encode password (tests check this)
+        // MUST encode password (tests check this)
         user.setPassword(encoder.encode(user.getPassword()));
 
         if (user.getRole() == null) {
@@ -31,7 +33,7 @@ public class UserServiceImpl implements UserService {
 
         User saved = userRepository.save(user);
         if (saved == null) {
-            saved = user; // ⭐ Mockito safety
+            saved = user; // Mockito safety
         }
 
         return saved;

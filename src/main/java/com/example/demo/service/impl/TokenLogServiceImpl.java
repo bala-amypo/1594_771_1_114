@@ -5,9 +5,11 @@ import com.example.demo.entity.TokenLog;
 import com.example.demo.repository.TokenLogRepository;
 import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.TokenLogService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service   // ⭐ REQUIRED
 public class TokenLogServiceImpl implements TokenLogService {
 
     private final TokenLogRepository logRepository;
@@ -34,7 +36,7 @@ public class TokenLogServiceImpl implements TokenLogService {
 
         TokenLog saved = logRepository.save(log);
         if (saved == null) {
-            saved = log; // ⭐ Mockito safety
+            saved = log; // Mockito safety
         }
 
         return saved;
