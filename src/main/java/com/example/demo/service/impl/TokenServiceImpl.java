@@ -2,9 +2,12 @@ package com.example.demo.service.impl;
 
 import com.example.demo.entity.*;
 import com.example.demo.repository.*;
+import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Service
 public class TokenServiceImpl {
 
     private final TokenRepository tokenRepo;
@@ -12,56 +15,82 @@ public class TokenServiceImpl {
     private final TokenLogRepository logRepo;
     private final QueuePositionRepository queueRepo;
 
-    public TokenServiceImpl(TokenRepository t, ServiceCounterRepository c,
-                            TokenLogRepository l, QueuePositionRepository q) {
-        tokenRepo = t; counterRepo = c; logRepo = l; queueRepo = q;
+    public TokenServiceImpl(
+            TokenRepository tokenRepo,
+            ServiceCounterRepository counterRepo,
+            TokenLogRepository logRepo,
+            QueuePositionRepository queueRepo) {
+
+        this.tokenRepo = tokenRepo;
+        this.counterRepo = counterRepo;
+        this.logRepo = logRepo;
+        this.queueRepo = queueRepo;
     }
 
     public Token issueToken(Long counterId) {
+
         ServiceCounter counter = counterRepo.findById(counterId)
-                .orElseThrow(() -> new RuntimeException("not found"));
+                .orElseThrow(() -> new RuntimeException("Counter not found"));
 
-        if (!counter.getIsActive()) throw new IllegalArgumentException("not active");
+        if (!counter.getIsActive()) {
+            throw new IllegalArgumentException("Counter not active");
+        }
 
-        Token token = new Token();
+        Token token = new Token();   // MUST create
         token.setServiceCounter(counter);
         token.setStatus("WAITING");
+        token.setIssuedAt(LocalDateTime.now());
         token.setTokenNumber(counter.getCounterName() + "-" + System.nanoTime());
-        tokenRepo.save(token);
 
-        int pos = tokenRepo
-                .findByServiceCounter_IdAndStatusOrderByIssuedAtAsc(counterId, "WAITING")
-                .size();
+        token = tokenRepo.save(token); // MUST capture return
+
+        List<Token> waiting =
+                tokenRepo.findByServiceCounter_IdAndStatusOrderByIssuedAtAsc(
+                        counterId, "WAITING");
 
         QueuePosition qp = new QueuePosition();
         qp.setToken(token);
-        qp.setPosition(pos);
+        qp.setPosition(waiting.size() + 1);
         queueRepo.save(qp);
 
-        logRepo.save(new TokenLog(token, "Issued"));
+        TokenLog log = new TokenLog();
+        log.setToken(token);
+        log.setMessage("Token issued");
+        logRepo.save(log);
+
         return token;
     }
 
     public Token updateStatus(Long tokenId, String status) {
-        Token token = tokenRepo.findById(tokenId)
-                .orElseThrow(() -> new RuntimeException("not found"));
 
-        String cur = token.getStatus();
-        if (status.equals("CANCELLED") ||
-            (cur.equals("WAITING") && status.equals("SERVING")) ||
-            (cur.equals("SERVING") && status.equals("COMPLETED"))) {
+        Token token = tokenRepo.findById(tokenId)
+                .orElseThrow(() -> new RuntimeException("Token not found"));
+
+        if (token.getStatus().equals("WAITING") && status.equals("SERVING")
+                || token.getStatus().equals("SERVING")
+                && (status.equals("COMPLETED") || status.equals("CANCELLED"))) {
 
             token.setStatus(status);
-            token.setCompletedAt(LocalDateTime.now());
+
+            if (status.equals("COMPLETED") || status.equals("CANCELLED")) {
+                token.setCompletedAt(LocalDateTime.now());
+            }
+
             tokenRepo.save(token);
-            logRepo.save(new TokenLog(token, status));
+
+            TokenLog log = new TokenLog();
+            log.setToken(token);
+            log.setMessage("Status changed to " + status);
+            logRepo.save(log);
+
             return token;
         }
-        throw new IllegalArgumentException("Invalid status");
+
+        throw new IllegalArgumentException("Invalid status transition");
     }
 
     public Token getToken(Long id) {
         return tokenRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("not found"));
+                .orElseThrow(() -> new RuntimeException("Token not found"));
     }
 }
