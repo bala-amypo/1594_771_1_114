@@ -10,6 +10,8 @@ import com.example.demo.repository.ServiceCounterRepository;
 import com.example.demo.repository.TokenLogRepository;
 import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.TokenService;
+import org.springframework.stereotype.Service;
+
 
 import java.time.LocalDateTime;
 import java.util.UUID;
