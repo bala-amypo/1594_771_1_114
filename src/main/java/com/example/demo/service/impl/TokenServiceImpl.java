@@ -23,6 +23,7 @@ public class TokenServiceImpl implements TokenService {
     private final TokenLogRepository logRepository;
     private final QueuePositionRepository queueRepository;
 
+    // ✅ Constructor must match tests
     public TokenServiceImpl(
             TokenRepository tokenRepository,
             ServiceCounterRepository counterRepository,
@@ -48,20 +49,24 @@ public class TokenServiceImpl implements TokenService {
             throw new IllegalArgumentException("Counter not active");
         }
 
+        // 🔑 Create new token
         Token token = new Token();
         token.setServiceCounter(counter);
         token.setStatus("WAITING");
         token.setIssuedAt(LocalDateTime.now());
         token.setTokenNumber("TOKEN-" + UUID.randomUUID());
 
+        // ✅ Save token
         Token savedToken = tokenRepository.save(token);
 
+        // ✅ Save queue position (tests expect this)
         QueuePosition qp = new QueuePosition();
         qp.setToken(savedToken);
         qp.setPosition(1);
         qp.setUpdatedAt(LocalDateTime.now());
         queueRepository.save(qp);
 
+        // ✅ Save token log (tests expect this)
         TokenLog log = new TokenLog();
         log.setToken(savedToken);
         log.setLogMessage("Token issued");
@@ -71,15 +76,16 @@ public class TokenServiceImpl implements TokenService {
     }
 
     // --------------------------------------------------
-    // UPDATE STATUS  (🔥 ALL TESTS EXPECT THIS LOGIC)
+    // UPDATE STATUS
     // --------------------------------------------------
     @Override
     public Token updateStatus(Long tokenId, String status) {
 
-        Token existing = tokenRepository.findById(tokenId)
+        // 🔥 IMPORTANT: use SAME object from repository
+        Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
-        String current = existing.getStatus();
+        String current = token.getStatus();
 
         boolean valid =
                 (current.equals("WAITING") &&
@@ -88,23 +94,20 @@ public class TokenServiceImpl implements TokenService {
                 (current.equals("SERVING") &&
                         (status.equals("COMPLETED") || status.equals("CANCELLED")));
 
-        // 🔥 REQUIRED BY t14
+        // 🔥 Required by t14
         if (!valid) {
             throw new IllegalArgumentException("Invalid status transition");
         }
 
-        Token updated = new Token();
-        updated.setId(existing.getId());
-        updated.setServiceCounter(existing.getServiceCounter());
-        updated.setIssuedAt(existing.getIssuedAt());
-        updated.setTokenNumber(existing.getTokenNumber());
-        updated.setStatus(status);
+        // 🔥 Modify SAME object (required by t15)
+        token.setStatus(status);
 
         if (status.equals("COMPLETED") || status.equals("CANCELLED")) {
-            updated.setCompletedAt(LocalDateTime.now());
+            token.setCompletedAt(LocalDateTime.now());
         }
 
-        return tokenRepository.save(updated);
+        // 🔥 Save SAME object
+        return tokenRepository.save(token);
     }
 
     // --------------------------------------------------
