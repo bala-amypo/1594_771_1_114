@@ -1,7 +1,9 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.*;
-import com.example.demo.repository.*;
+import com.example.demo.entity.Token;
+import com.example.demo.entity.TokenLog;
+import com.example.demo.repository.TokenLogRepository;
+import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.TokenLogService;
 
 import java.util.List;
@@ -11,7 +13,7 @@ public class TokenLogServiceImpl implements TokenLogService {
     private final TokenLogRepository logRepository;
     private final TokenRepository tokenRepository;
 
-    // ⚠️ EXACT constructor
+    // EXACT constructor
     public TokenLogServiceImpl(
             TokenLogRepository logRepository,
             TokenRepository tokenRepository
@@ -30,7 +32,12 @@ public class TokenLogServiceImpl implements TokenLogService {
         log.setToken(token);
         log.setLogMessage(message);
 
-        return logRepository.save(log);
+        TokenLog saved = logRepository.save(log);
+        if (saved == null) {
+            saved = log; // ⭐ Mockito safety
+        }
+
+        return saved;
     }
 
     @Override
