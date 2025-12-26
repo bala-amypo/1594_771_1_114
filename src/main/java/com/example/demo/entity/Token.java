@@ -23,7 +23,7 @@ public class Token {
 
     private LocalDateTime completedAt;
 
-    // -------- getters & setters --------
+    public Token() {}
 
     public Long getId() {
         return id;
@@ -52,18 +52,13 @@ public class Token {
     public String getStatus() {
         return status;
     }
-
+    
     public void setStatus(String status) {
         this.status = status;
     }
 
     public LocalDateTime getIssuedAt() {
         return issuedAt;
-    }
-
-    // ✅ REQUIRED BY SERVICE
-    public void setIssuedAt(LocalDateTime issuedAt) {
-        this.issuedAt = issuedAt;
     }
 
     public LocalDateTime getCompletedAt() {

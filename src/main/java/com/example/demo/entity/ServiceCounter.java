@@ -6,22 +6,46 @@ import jakarta.persistence.*;
 public class ServiceCounter {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String counterName;
+
     private String department;
+
     private Boolean isActive = true;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public ServiceCounter() {}
 
-    public String getCounterName() { return counterName; }
-    public void setCounterName(String counterName) { this.counterName = counterName; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getDepartment() { return department; }
-    public void setDepartment(String department) { this.department = department; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Boolean getIsActive() { return isActive; }
-    public void setIsActive(Boolean active) { isActive = active; }
+    public String getCounterName() {
+        return counterName;
+    }
+
+    public void setCounterName(String counterName) {
+        this.counterName = counterName;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+    
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean active) {
+        isActive = active;
+    }
 }
