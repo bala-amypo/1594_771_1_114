@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.TokenLog;
-import com.example.demo.service.impl.TokenLogServiceImpl;
+import com.example.demo.service.TokenLogService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,21 +10,22 @@ import java.util.List;
 @RequestMapping("/logs")
 public class TokenLogController {
 
-    private final TokenLogServiceImpl service;
+    private final TokenLogService tokenLogService;
 
-    public TokenLogController(TokenLogServiceImpl service) {
-        this.service = service;
+    public TokenLogController(TokenLogService tokenLogService) {
+        this.tokenLogService = tokenLogService;
     }
 
     @PostMapping("/{tokenId}")
     public TokenLog addLog(
             @PathVariable Long tokenId,
-            @RequestParam String message) {
-        return service.addLog(tokenId, message);
+            @RequestParam String message
+    ) {
+        return tokenLogService.addLog(tokenId, message);
     }
 
     @GetMapping("/{tokenId}")
     public List<TokenLog> getLogs(@PathVariable Long tokenId) {
-        return service.getLogs(tokenId);
+        return tokenLogService.getLogs(tokenId);
     }
 }

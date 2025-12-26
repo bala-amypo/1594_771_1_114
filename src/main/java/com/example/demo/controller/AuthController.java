@@ -2,21 +2,26 @@ package com.example.demo.controller;
 
 import com.example.demo.config.JwtTokenProvider;
 import com.example.demo.entity.User;
-import com.example.demo.service.impl.UserServiceImpl;
+import com.example.demo.service.UserService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final UserServiceImpl userService;
+    private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthController(UserServiceImpl userService, JwtTokenProvider jwtTokenProvider) {
+    public AuthController(
+            UserService userService,
+            JwtTokenProvider jwtTokenProvider,
+            PasswordEncoder passwordEncoder
+    ) {
         this.userService = userService;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/register")
@@ -25,11 +30,18 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Map<String, String> login(@RequestBody User user) {
-        User u = userService.findByEmail(user.getEmail());
-        String token = jwtTokenProvider.generateToken(
-                u.getId(), u.getEmail(), u.getRole()
+    public String login(@RequestBody User request) {
+
+        User user = userService.findByEmail(request.getEmail());
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        return jwtTokenProvider.generateToken(
+                user.getId(),
+                user.getEmail(),
+                user.getRole()
         );
-        return Map.of("token", token);
     }
 }
