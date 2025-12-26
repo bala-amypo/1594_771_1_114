@@ -1,6 +1,8 @@
 package com.example.demo.service.impl;
 
+import com.example.demo.entity.Token;
 import com.example.demo.entity.TokenLog;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.TokenLogRepository;
 import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.TokenLogService;
@@ -24,7 +26,12 @@ public class TokenLogServiceImpl implements TokenLogService {
     @Override
     public TokenLog addLog(Long tokenId, String message) {
 
+        // 🔑 REQUIRED: token must be fetched & set
+        Token token = tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
+
         TokenLog log = new TokenLog();
+        log.setToken(token);          // 🔥 THIS LINE FIXES MOCKITO
         log.setLogMessage(message);
 
         return logRepository.save(log);
