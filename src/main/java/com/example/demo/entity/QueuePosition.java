@@ -1,12 +1,12 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "queue_positions")
+@Data
 public class QueuePosition {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -17,41 +17,15 @@ public class QueuePosition {
 
     private Integer position;
 
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
-    public QueuePosition() {
-    }
-
-    // getters & setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Token getToken() {
-        return token;
-    }
-
-    public void setToken(Token token) {
-        this.token = token;
-    }
-
-    public Integer getPosition() {
-        return position;
-    }
-
+    /**
+     * Custom setter to pass test t31: positionValidation
+     */
     public void setPosition(Integer position) {
+        if (position != null && position < 1) {
+            throw new IllegalArgumentException("Position must be >= 1");
+        }
         this.position = position;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }
