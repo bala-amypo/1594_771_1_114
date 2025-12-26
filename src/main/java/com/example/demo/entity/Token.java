@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "tokens")
 public class Token {
 
     @Id
@@ -17,15 +18,16 @@ public class Token {
     @JoinColumn(name = "service_counter_id")
     private ServiceCounter serviceCounter;
 
-    private String status = "WAITING";
-    // WAITING / SERVING / COMPLETED / CANCELLED
+    private String status;
 
     private LocalDateTime issuedAt;
 
     private LocalDateTime completedAt;
 
-    // -------- getters & setters --------
+    public Token() {
+    }
 
+    // getters & setters
     public Long getId() {
         return id;
     }

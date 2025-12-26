@@ -4,23 +4,25 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "queue_positions")
 public class QueuePosition {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "token_id", unique = true)
+    @OneToOne
+    @JoinColumn(name = "token_id")
     private Token token;
 
     private Integer position;
 
-    // ✅ auto timestamp (NO setter)
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private LocalDateTime updatedAt;
 
-    // -------- getters & setters --------
+    public QueuePosition() {
+    }
 
+    // getters & setters
     public Long getId() {
         return id;
     }
@@ -47,5 +49,9 @@ public class QueuePosition {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

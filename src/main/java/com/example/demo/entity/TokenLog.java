@@ -1,45 +1,64 @@
 package com.example.demo.entity;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "token_logs")
 public class TokenLog {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "token_id")
     private Token token;
-    private String message;
 
-    // default timestamp (required by tests)
-    private LocalDateTime loggedAt = LocalDateTime.now();
+    private String logMessage;
 
-    public Long getId() { 
-        return id; 
+    private LocalDateTime loggedAt;
+
+    public TokenLog() {
+        // ✅ TEST expects auto timestamp
+        this.loggedAt = LocalDateTime.now();
     }
 
-    public void setId(Long id) { 
-        this.id = id; 
+    public TokenLog(Token token, String logMessage) {
+        this.token = token;
+        this.logMessage = logMessage;
+        this.loggedAt = LocalDateTime.now();
     }
 
-    public Token getToken() { 
-        return token; 
+    // getters & setters
+    public Long getId() {
+        return id;
     }
 
-    public void setToken(Token token) { 
-        this.token = token; 
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getMessage() { 
-        return message; 
+    public Token getToken() {
+        return token;
     }
 
-    public void setMessage(String message) { 
-        this.message = message; 
+    public void setToken(Token token) {
+        this.token = token;
     }
 
-    public LocalDateTime getLoggedAt() { 
-        return loggedAt; 
+    public String getLogMessage() {
+        return logMessage;
     }
 
-    // ✅ THIS IS THE MISSING PIECE
+    public void setLogMessage(String logMessage) {
+        this.logMessage = logMessage;
+    }
+
+    public LocalDateTime getLoggedAt() {
+        return loggedAt;
+    }
+
     public void setLoggedAt(LocalDateTime loggedAt) {
         this.loggedAt = loggedAt;
     }
