@@ -13,7 +13,7 @@ import com.example.demo.service.TokenService;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
+@service
 public class TokenServiceImpl implements TokenService {
 
     private final TokenRepository tokenRepository;
