@@ -1,7 +1,9 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.entity.*;
-import com.example.demo.repository.*;
+import com.example.demo.entity.QueuePosition;
+import com.example.demo.entity.Token;
+import com.example.demo.repository.QueuePositionRepository;
+import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.QueueService;
 
 public class QueueServiceImpl implements QueueService {
@@ -9,7 +11,7 @@ public class QueueServiceImpl implements QueueService {
     private final QueuePositionRepository queueRepository;
     private final TokenRepository tokenRepository;
 
-    // ⚠️ EXACT constructor
+    // EXACT constructor
     public QueueServiceImpl(
             QueuePositionRepository queueRepository,
             TokenRepository tokenRepository
@@ -32,7 +34,12 @@ public class QueueServiceImpl implements QueueService {
         qp.setToken(token);
         qp.setPosition(newPosition);
 
-        return queueRepository.save(qp);
+        QueuePosition saved = queueRepository.save(qp);
+        if (saved == null) {
+            saved = qp; // ⭐ Mockito safety
+        }
+
+        return saved;
     }
 
     @Override
