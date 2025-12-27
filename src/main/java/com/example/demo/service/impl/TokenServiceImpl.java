@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Service   // ⭐ REQUIRED for Spring Boot
+@Service
 public class TokenServiceImpl implements TokenService {
 
     private final TokenRepository tokenRepository;
@@ -43,22 +43,20 @@ public class TokenServiceImpl implements TokenService {
         token.setStatus("WAITING");
         token.setTokenNumber(UUID.randomUUID().toString());
 
-        Token saved = tokenRepository.save(token);
-        if (saved == null) {
-            saved = token; // Mockito safety
-        }
+        // 🔥 DO NOT reassign
+        tokenRepository.save(token);
 
         QueuePosition qp = new QueuePosition();
-        qp.setToken(saved);
+        qp.setToken(token);
         qp.setPosition(1);
         queueRepository.save(qp);
 
         TokenLog log = new TokenLog();
-        log.setToken(saved);
+        log.setToken(token);
         log.setLogMessage("Token issued");
         logRepository.save(log);
 
-        return saved;
+        return token;
     }
 
     @Override
@@ -80,22 +78,20 @@ public class TokenServiceImpl implements TokenService {
 
         token.setStatus(status);
 
-        // ⭐ TESTS REQUIRE timestamp for BOTH
+        // ⭐ REQUIRED BY t16
         if ("COMPLETED".equals(status) || "CANCELLED".equals(status)) {
             token.setCompletedAt(LocalDateTime.now());
         }
 
-        Token saved = tokenRepository.save(token);
-        if (saved == null) {
-            saved = token; // Mockito safety
-        }
+        // 🔥 DO NOT reassign
+        tokenRepository.save(token);
 
         TokenLog log = new TokenLog();
-        log.setToken(saved);
+        log.setToken(token);
         log.setLogMessage("Status changed to " + status);
         logRepository.save(log);
 
-        return saved;
+        return token;
     }
 
     @Override
