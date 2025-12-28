@@ -7,46 +7,33 @@ import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.QueueService;
 import org.springframework.stereotype.Service;
 
-@Service   // ⭐ REQUIRED
+@Service
 public class QueueServiceImpl implements QueueService {
-
     private final QueuePositionRepository queueRepository;
     private final TokenRepository tokenRepository;
 
-    // EXACT constructor
-    public QueueServiceImpl(
-            QueuePositionRepository queueRepository,
-            TokenRepository tokenRepository
-    ) {
+    public QueueServiceImpl(QueuePositionRepository queueRepository, TokenRepository tokenRepository) {
         this.queueRepository = queueRepository;
         this.tokenRepository = tokenRepository;
     }
 
     @Override
-    public QueuePosition updateQueuePosition(Long tokenId, Integer newPosition) {
-
-        if (newPosition < 1) {
+    public QueuePosition updateQueuePosition(Long tokenId, Integer position) {
+        if (position < 1) {
             throw new IllegalArgumentException("Position must be >= 1");
         }
-
-        Token token = tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new RuntimeException("Token not found"));
-
-        QueuePosition qp = new QueuePosition();
-        qp.setToken(token);
-        qp.setPosition(newPosition);
-
-        QueuePosition saved = queueRepository.save(qp);
-        if (saved == null) {
-            saved = qp; // Mockito safety
-        }
-
-        return saved;
+        
+        Token token = tokenRepository.findById(tokenId).orElse(null);
+        QueuePosition queuePosition = queueRepository.findByToken_Id(tokenId)
+            .orElse(new QueuePosition());
+        
+        queuePosition.setToken(token);
+        queuePosition.setPosition(position);
+        return queueRepository.save(queuePosition);
     }
 
     @Override
     public QueuePosition getPosition(Long tokenId) {
-        return queueRepository.findByToken_Id(tokenId)
-                .orElseThrow(() -> new RuntimeException("Queue position not found"));
+        return queueRepository.findByToken_Id(tokenId).orElse(null);
     }
 }

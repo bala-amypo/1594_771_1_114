@@ -6,40 +6,25 @@ import com.example.demo.repository.TokenLogRepository;
 import com.example.demo.repository.TokenRepository;
 import com.example.demo.service.TokenLogService;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
-@Service   // ⭐ REQUIRED
+@Service
 public class TokenLogServiceImpl implements TokenLogService {
-
     private final TokenLogRepository logRepository;
     private final TokenRepository tokenRepository;
 
-    // EXACT constructor
-    public TokenLogServiceImpl(
-            TokenLogRepository logRepository,
-            TokenRepository tokenRepository
-    ) {
+    public TokenLogServiceImpl(TokenLogRepository logRepository, TokenRepository tokenRepository) {
         this.logRepository = logRepository;
         this.tokenRepository = tokenRepository;
     }
 
     @Override
     public TokenLog addLog(Long tokenId, String message) {
-
-        Token token = tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new RuntimeException("Token not found"));
-
+        Token token = tokenRepository.findById(tokenId).orElse(null);
         TokenLog log = new TokenLog();
         log.setToken(token);
-        log.setLogMessage(message);
-
-        TokenLog saved = logRepository.save(log);
-        if (saved == null) {
-            saved = log; // Mockito safety
-        }
-
-        return saved;
+        log.setMessage(message);
+        return logRepository.save(log);
     }
 
     @Override
