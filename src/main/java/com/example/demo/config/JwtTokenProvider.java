@@ -2,46 +2,43 @@ package com.example.demo.config;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-
-import java.security.Key;
+import org.springframework.stereotype.Component;
+import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
+@Component
 public class JwtTokenProvider {
+    private final SecretKey key;
+    private final long validityInMilliseconds;
 
-    private final Key key;
-    private final long validityInMillis;
+    public JwtTokenProvider() {
+        this("mySuperSecretKeyThatIsAtLeast32CharactersLongForJWT123456789", 86400000);
+    }
 
-    // ⚠️ EXACT constructor used in tests
-    public JwtTokenProvider(String secretKey, long validityInMillis) {
+    public JwtTokenProvider(String secretKey, long validityInMilliseconds) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
-        this.validityInMillis = validityInMillis;
+        this.validityInMilliseconds = validityInMilliseconds;
     }
 
     public String generateToken(Long userId, String email, String role) {
-
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("email", email);
-        claims.put("role", role);
-
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + validityInMillis);
+        Date validity = new Date(now.getTime() + validityInMilliseconds);
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(String.valueOf(userId)) // ⚠️ test checks subject
+                .setSubject(userId.toString())
+                .claim("email", email)
+                .claim("role", role)
                 .setIssuedAt(now)
-                .setExpiration(expiry)
-                .signWith(key, SignatureAlgorithm.HS256)
+                .setExpiration(validity)
+                .signWith(key)
                 .compact();
     }
 
     public boolean validateToken(String token) {
         try {
-            getClaims(token);
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
-        } catch (Exception e) {
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }

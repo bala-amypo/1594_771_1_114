@@ -1,24 +1,22 @@
 package com.example.demo.config;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import javax.sql.DataSource;
 
-import java.io.IOException;
+@Configuration
+public class DataSourceConfig {
 
-@Component
-public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
-
-    @Override
-    public void commence(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            AuthenticationException authException
-    ) throws IOException, ServletException {
-
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+    @Bean
+    @Primary
+    public DataSource dataSource() {
+        return DataSourceBuilder.create()
+                .driverClassName("org.mariadb.jdbc.Driver")
+                .url("jdbc:mariadb://localhost:3306/digital_asset")
+                .username("seeman")
+                .password("12345")
+                .build();
     }
 }
