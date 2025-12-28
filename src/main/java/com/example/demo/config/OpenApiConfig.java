@@ -1,9 +1,33 @@
+// package com.example.demo.config;
+
+// import io.swagger.v3.oas.models.OpenAPI;
+// import io.swagger.v3.oas.models.servers.Server;
+// import org.springframework.context.annotation.Bean;
+// import org.springframework.context.annotation.Configuration;
+// import java.util.List;
+
+// @Configuration
+// public class OpenApiConfig {
+
+//     @Bean
+//     public OpenAPI customOpenAPI() {
+//         return new OpenAPI()
+//                 // You need to change the port as per your server
+//                 .servers(List.of(
+//                         new Server().url("https://9118.pro604cr.amypo.ai/")
+//                 ));
+//         }
+// }
 package com.example.demo.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import java.util.List;
 
 @Configuration
@@ -11,10 +35,30 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
+
+        // 🔐 JWT Security Scheme
+        SecurityScheme jwtScheme = new SecurityScheme()
+                .name("Authorization")
+                .type(SecurityScheme.Type.HTTP)
+                .scheme("bearer")
+                .bearerFormat("JWT");
+
         return new OpenAPI()
-                // You need to change the port as per your server
+                // 🌍 Server URL
                 .servers(List.of(
-                        new Server().url("https://9118.pro604cr.amypo.ai/")
-                ));
-        }
+                        new Server().url("https://9118.pro604cr.amypo.ai")
+                ))
+
+                // 🔒 Apply security globally
+                .addSecurityItem(
+                        new SecurityRequirement().addList("BearerAuth")
+                )
+
+                // 🔑 Register security scheme
+                .components(
+                        new Components().addSecuritySchemes(
+                                "BearerAuth", jwtScheme
+                        )
+                );
+    }
 }
