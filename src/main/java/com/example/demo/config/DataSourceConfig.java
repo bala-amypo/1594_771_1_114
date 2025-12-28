@@ -15,8 +15,8 @@ public class DataSourceConfig {
         return DataSourceBuilder.create()
                 .driverClassName("org.mariadb.jdbc.Driver")
                 .url("jdbc:mariadb://localhost:3306/digital_asset")
-                .username("seeman")
-                .password("12345")
+                .username("root")
+                .password("Amypo")
                 .build();
     }
 }
